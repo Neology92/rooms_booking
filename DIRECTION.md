@@ -45,8 +45,23 @@
 ## 6. UX i dostępność
 - Wersja mobilna / PWA, działanie offline-first.
 - Link/QR do dołączenia do wyjazdu bez zakładania pełnego konta.
-- Wielojęzyczność (PL/EN).
+- **Polska wersja językowa UI** (i ew. kolejne języki). UI startowo po angielsku
+  jest wymaganiem twardym (`NEEDS §12`); PL dochodzi jako lokalizacja, gdy będzie potrzeba.
 - Widok „mapa pokojów” / wizualny układ pięter.
+
+---
+
+## 8. Integracje deweloperskie / AI (np. Claude Code)
+Wpięcie automatyzacji i asystentów AI w cykl pracy nad projektem oraz w samą aplikację:
+- **Claude Code w repo** — np. `CLAUDE.md` jako kontekst (już jest), hooki SessionStart
+  uruchamiające testy/lintery na starcie, automatyczny przegląd PR-ów i poprawki CI.
+- **Claude Code on the web / GitHub** — zlecanie zmian i przeglądów z poziomu repo.
+- **AI w produkcie** — np. asystent sugerujący przydział pokojów w języku naturalnym
+  („posadź te 3 osoby razem, resztę dobierz wg preferencji”) jako nakładka na silnik z `NEEDS §9`.
+- Webhooki / API, by spinać aplikację z zewnętrznymi narzędziami (kalendarz, mail, Slack).
+
+> Wszystkie powyższe to **dodatki** — nie mogą naruszać wymagania `NEEDS §11` (ZERO kosztów)
+> dla funkcji krytycznych. Jeśli integracja generuje koszt, jest opcjonalna i świadomie włączana.
 
 ---
 

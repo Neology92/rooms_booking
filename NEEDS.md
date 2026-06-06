@@ -100,10 +100,28 @@ Te zasady muszą być prawdziwe **zawsze**, niezależnie od ścieżki w aplikacj
 2. Liczba osób w pokoju **nigdy nie przekracza limitu** (także przy równoczesnych zapisach).
 3. Po włączeniu **locka** uczestnicy nie zmieniają przypisań (zmiany tylko po stronie organizatora).
 4. Naruszony **MUST HAVE** jest zawsze widoczny jako stan krytyczny.
+5. Całość mieści się w **darmowych planach** — żadne wymaganie krytyczne nie generuje kosztu (§11).
+6. UI aplikacji jest po **angielsku** (§12).
 
 ---
 
-## 11. Poza zakresem (na teraz)
+## 11. Budżet — ZERO kosztów (wymaganie twarde)
+- [ ] Aplikacja działa w pełni **w ramach darmowych planów (100% free)** — hosting,
+      baza, auth, realtime, domena. **Brak kosztów** to wymaganie krytyczne, nie preferencja.
+- [ ] Architektura i decyzje techniczne **nie mogą wymuszać płatnego planu**, by
+      spełnić wymagania z tego dokumentu. Jeśli funkcja wymagałaby płatnego planu —
+      **zgłoś to wprost** i potraktuj jako naruszenie założeń (patrz `INDEX.md §2`).
+- [ ] Dopuszczalne jest projektowanie pod limity darmowych planów (np. optymalizacja
+      liczby jednoczesnych połączeń realtime), byle bez wychodzenia poza free.
+- [ ] Płatne plany / skalowanie komercyjne → **`DIRECTION.md`** (gdyby kiedyś było potrzebne).
+
+## 12. Język aplikacji (wymaganie twarde)
+- [ ] Interfejs aplikacji jest w **języku angielskim** (MUST HAVE).
+- [ ] **Język polski** w UI to przyszły dodatek — patrz `DIRECTION.md`.
+- [ ] Uwaga: dotyczy **UI aplikacji**. Dokumentacja założeń (`NEEDS`/`CLAUDE`/`INDEX`/
+      `DIRECTION`) pozostaje po polsku; nazwy w kodzie po angielsku (patrz `CLAUDE.md §5`).
+
+## 13. Poza zakresem (na teraz)
 - Płatności / rozliczenia za pokoje.
 - Rezerwacje w realnych systemach hotelowych (PMS/booking).
 - Pełne planowanie wyjazdu (transport, agenda) — to robią inne narzędzia.

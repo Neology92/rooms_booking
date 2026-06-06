@@ -59,25 +59,40 @@ Invarianty egzekwowane na poziomie danych/serwera — patrz `NEEDS.md §10`.
 
 ---
 
-## 4. Proponowany stack *(propozycja — do potwierdzenia)*
-Cel: jak najmniej infrastruktury, a jednocześnie realtime + atomowość + auth.
+## 4. Stack — darmowy z założenia (`NEEDS §11` — ZERO kosztów)
+Cel: jak najmniej infrastruktury, realtime + atomowość + auth, a przy tym **100% w ramach
+darmowych planów**. Brak kosztów to **wymaganie twarde** — nie wolno go naruszać dla
+spełnienia innych wymagań krytycznych.
 
-- **Frontend:** React + TypeScript (lub Next.js). UI komponentowy, responsywny.
-- **Backend + dane:** **Supabase** (PostgreSQL + Realtime + Auth + Row Level Security)
-  **lub** Next.js full-stack z Postgres. Postgres daje transakcje i ograniczenia
-  (`UNIQUE`, `CHECK`) potrzebne do egzekwowania invariantów.
+- **Frontend + domena:** **Netlify** (Free) — hosting statycznego frontendu +
+  **darmowa domena** `*.netlify.app`. Frontend: React + TypeScript.
+- **Backend + dane:** **Supabase** (Free) — PostgreSQL + Realtime + Auth + Row Level
+  Security. Postgres daje transakcje i ograniczenia (`UNIQUE`, `CHECK`) potrzebne do
+  egzekwowania invariantów (`NEEDS §10`).
 - **Egzekwowanie limitu/locka:** w transakcji DB lub funkcji serwerowej (RPC),
   **nigdy** wyłącznie w kliencie.
 - **Optymalizacja (`NEEDS §9`):** start od prostej heurystyki wykrywania naruszeń
   i propozycji zamian; docelowo ew. solver (patrz `DIRECTION.md §3`).
 
-> Alternatywy (Firebase, własny Node/Express + Postgres) są dopuszczalne, jeśli
-> spełniają wymagania z §2. Decyzję o stacku potwierdź z autorem i odnotuj tutaj.
+### 4.1. Limity darmowych planów (świadomość kosztów)
+Dla aplikacji na wyjazd grupowy darmowe plany wystarczają z dużym zapasem. Pilnuj:
+- **Supabase Free:** 500 MB bazy, 50 tys. MAU, **200 jednoczesnych połączeń realtime**
+  (najwęższe gardło — liczy się ruch *równoczesny*, nie łączny), usypianie projektu
+  po 7 dniach bezczynności, 2 projekty.
+- **Netlify Free:** 100 GB transferu, 300 min buildów; po limicie strona jest
+  wstrzymywana (twardy limit, **brak niespodziewanych rachunków**).
+- Gdyby któreś wymaganie groziło wyjściem poza free → **zgłoś to** i przenieś dyskusję
+  o płatnych planach do `DIRECTION.md`. Nie wprowadzaj płatnego planu po cichu.
+
+> Alternatywy (Firebase, Neon + Next.js itp.) dopuszczalne **tylko** jeśli pozostają
+> w pełni darmowe i spełniają §2. Każdą zmianę stacku odnotuj tutaj.
 
 ---
 
 ## 5. Konwencje (do uzupełniania w miarę rozwoju)
-- **Język:** dokumentacja założeń po polsku; nazwy w kodzie po angielsku.
+- **Język:** **UI aplikacji po angielsku** (MUST HAVE — `NEEDS §12`); polski w UI to
+  przyszły dodatek (`DIRECTION.md`). Dokumentacja założeń po polsku; nazwy w kodzie po angielsku.
+  Teksty UI trzymaj w jednym miejscu (np. słownik i18n), by późniejszy PL był łatwy.
 - **Walidacja invariantów:** zawsze po stronie serwera; UI tylko wspiera UX.
 - **Sygnalizacja w dashboardzie:** kolor wprost odwzorowuje stan
   (np. zielony=komplet/OK, żółty=w toku, czerwony=naruszony MUST HAVE / przekroczenie).
