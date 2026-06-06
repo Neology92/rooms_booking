@@ -52,3 +52,11 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .issue { padding: 0.5rem 0.7rem; border-radius: 8px; }
 .issue--critical { background: #fee2e2; color: #991b1b; }
 .issue--pref { background: #fef9c3; color: #854d0e; }
+
+.muted { color: #6b7280; font-size: 0.85rem; }
+.onboarding { display: grid; gap: 0.75rem; max-width: 360px; }
+.onboarding input { font: inherit; padding: 0.5rem; border-radius: 8px; border: 1px solid var(--line); }
+.onboarding button { font: inherit; padding: 0.5rem 0.9rem; border-radius: 8px; border: 1px solid #111827; background: #111827; color: #fff; cursor: pointer; }
+
+.identity { display: flex; gap: 0.75rem; align-items: center; justify-content: space-between; padding: 0.5rem 0.75rem; background: #fff; border: 1px solid var(--line); border-radius: 8px; margin-bottom: 0.75rem; }
+.linklike { background: none; border: none; color: #2563eb; cursor: pointer; padding: 0; font: inherit; text-decoration: underline; }

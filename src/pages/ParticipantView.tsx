@@ -2,12 +2,21 @@ import { useMemo, useState } from "react";
 import { en } from "../i18n/strings";
 import { joinRoom, leaveRoom } from "../lib/actions";
 import type { TripData } from "../hooks/useTripData";
+import type { Participant } from "../types/domain";
 
 const t = en.participant;
 
-export function ParticipantView({ data }: { data: TripData }) {
+export function ParticipantView({
+  data,
+  me,
+  onReset,
+}: {
+  data: TripData;
+  me: Participant;
+  onReset: () => void;
+}) {
   const { trip, rooms, participants, assignments } = data;
-  const [meId, setMeId] = useState<string>("");
+  const meId = me.id;
   const [error, setError] = useState<string>("");
   const [busy, setBusy] = useState(false);
 
@@ -33,17 +42,12 @@ export function ParticipantView({ data }: { data: TripData }) {
 
   return (
     <section>
-      <label className="field">
-        <span>{t.pickName}</span>
-        <select value={meId} onChange={(e) => setMeId(e.target.value)}>
-          <option value="">— {t.whoAreYou} —</option>
-          {participants.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name}
-            </option>
-          ))}
-        </select>
-      </label>
+      <div className="identity">
+        <span>{en.onboarding.signedInAs(me.name)}</span>
+        <button className="linklike" onClick={onReset}>
+          {en.onboarding.notYou}
+        </button>
+      </div>
 
       {locked && <p className="banner banner--locked">{t.locked}</p>}
       {error && <p className="banner banner--error">{error}</p>}

@@ -46,3 +46,24 @@ export async function setSignupsLock(
   });
   return error ? { ok: false, error: toMessage(error.message) } : { ok: true };
 }
+
+export interface RegisterResult extends ActionResult {
+  id?: string;
+}
+
+export async function registerParticipant(
+  tripId: string,
+  name: string,
+  email: string,
+  gender: string,
+): Promise<RegisterResult> {
+  if (!supabase) return { ok: false, error: en.errors.UNKNOWN };
+  const { data, error } = await supabase.rpc("register_participant", {
+    p_trip_id: tripId,
+    p_name: name,
+    p_email: email,
+    p_gender: gender,
+  });
+  if (error) return { ok: false, error: toMessage(error.message) };
+  return { ok: true, id: data as string };
+}
