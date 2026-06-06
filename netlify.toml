@@ -1,0 +1,10 @@
+# Netlify (free plan) — static hosting + free *.netlify.app domain.
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# SPA fallback: every route serves index.html.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

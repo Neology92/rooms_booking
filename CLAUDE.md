@@ -105,4 +105,27 @@ Dla aplikacji na wyjazd grupowy darmowe plany wystarczają z dużym zapasem. Pil
 ---
 
 ## 6. Komendy projektu
-*(Brak — projekt jeszcze nie ma kodu. Uzupełnij po inicjalizacji: instalacja, dev, build, test.)*
+- `npm install` — instalacja zależności.
+- `npm run dev` — lokalny serwer deweloperski (Vite).
+- `npm run build` — typecheck + build produkcyjny do `dist/`.
+- `npm run typecheck` — sama kontrola typów.
+- `npm run lint` — ESLint.
+- `npm test` — testy jednostkowe (Vitest).
+
+Baza: w panelu Supabase uruchom `supabase/migrations/0001_init.sql`
+(i opcjonalnie `supabase/seed.sql`). Konfiguracja połączenia: `.env` wg `.env.example`.
+Setup i deploy: patrz `README.md`.
+
+## 7. Stan implementacji (MVP) i kolejne kroki
+Zrobione: lista pokojów + obłożenie na żywo, atomowy zapis/przepisanie/wypisanie
+(bez dublowania, odporne na wyścig o ostatnie miejsce), lock egzekwowany po stronie
+serwera, dashboard organizatora (liczniki, status kolorem, sygnalizacja MUST HAVE vs
+preferencja).
+
+Kolejne kroki (świadomie odłożone, zgodne z `NEEDS`/`DIRECTION`):
+- **Auth + autoryzacja organizatora** — obecnie RPC `set_signups_lock` i edycje nie są
+  ograniczone do organizatora (RLS tylko do odczytu, zapisy przez RPC bez ról).
+  To **dług do spłaty** zanim aplikacja pójdzie publicznie.
+- **Ręczne korekty organizatora** (`NEEDS §5`) — override przypisań w dashboardzie.
+- **Optymalizacja na żądanie** (`NEEDS §9`) — propozycje zamian.
+- **Wysyłka e-maili**, **polski locale**, **requesty preferencji** — `DIRECTION.md`.

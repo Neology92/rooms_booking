@@ -1,0 +1,54 @@
+:root {
+  --green: #16a34a;
+  --amber: #d97706;
+  --red: #dc2626;
+  --line: #e5e7eb;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: #111827;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: #f9fafb; }
+
+.app { max-width: 720px; margin: 0 auto; padding: 1rem; }
+.app__header { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; justify-content: space-between; }
+h1 { font-size: 1.4rem; margin: 0.5rem 0; }
+h2 { font-size: 1.1rem; margin: 1.25rem 0 0.5rem; }
+
+.tabs button, .room__actions button, .status button {
+  font: inherit; padding: 0.4rem 0.8rem; border: 1px solid var(--line);
+  background: #fff; border-radius: 8px; cursor: pointer;
+}
+.tabs button.active { background: #111827; color: #fff; border-color: #111827; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.field { display: flex; flex-direction: column; gap: 0.25rem; margin: 0.5rem 0 1rem; }
+.field select { font: inherit; padding: 0.5rem; border-radius: 8px; border: 1px solid var(--line); }
+
+.rooms, .issues { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.6rem; }
+.room { border: 1px solid var(--line); border-radius: 10px; padding: 0.75rem; background: #fff; }
+.room--mine { border-color: var(--green); box-shadow: 0 0 0 1px var(--green); }
+.room__head { display: flex; justify-content: space-between; align-items: center; }
+.room__info { color: #6b7280; font-size: 0.85rem; margin: 0.25rem 0; }
+.room__people { margin: 0.4rem 0; }
+.room__actions { display: flex; gap: 0.5rem; align-items: center; }
+.here { color: var(--green); font-weight: 600; }
+
+.tag { font-size: 0.8rem; padding: 0.15rem 0.5rem; border-radius: 999px; background: #f3f4f6; }
+.tag--full { background: #fee2e2; color: var(--red); }
+
+.banner { padding: 0.6rem 0.8rem; border-radius: 8px; margin: 0.75rem 0; }
+.banner--locked { background: #fef3c7; color: #92400e; }
+.banner--error { background: #fee2e2; color: var(--red); }
+.banner--ok { background: #dcfce7; color: var(--green); }
+
+.status { display: flex; align-items: center; gap: 1rem; padding: 0.75rem; border-radius: 10px; border-left: 6px solid var(--amber); background: #fff; }
+.status--complete { border-left-color: var(--green); }
+.status--in_progress { border-left-color: var(--amber); }
+.status--violation { border-left-color: var(--red); }
+.status__label { display: block; font-size: 0.8rem; color: #6b7280; }
+.status__value { font-size: 1.4rem; font-weight: 700; }
+
+.issue { padding: 0.5rem 0.7rem; border-radius: 8px; }
+.issue--critical { background: #fee2e2; color: #991b1b; }
+.issue--pref { background: #fef9c3; color: #854d0e; }

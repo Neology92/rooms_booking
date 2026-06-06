@@ -44,30 +44,49 @@ Przy **każdym** zadaniu (planowanie, kod, refaktor, decyzja projektowa):
 
 ## 3. Struktura projektu
 
-> Repozytorium jest na wczesnym etapie (faza założeń). Poniższa struktura to
-> **plan docelowy** — aktualizuj tę tabelę, gdy pliki realnie powstają.
+> Aktualizuj tę tabelę, gdy struktura się zmienia (MVP już istnieje).
 
 ```
 rooms_booking/
-├── CLAUDE.md          # założenia techniczne + zasady dla asystenta
-├── NEEDS.md           # wymagania krytyczne
-├── DIRECTION.md       # wizja i dodatki
-├── INDEX.md           # ten plik — mapa + zasady pracy
-├── (frontend/)        # [planowane] interfejs uczestnika i dashboard organizatora
-├── (backend/ lub api/)# [planowane] logika domenowa, walidacja invariantów, realtime
-├── (db/ lub schema/)  # [planowane] model danych / migracje
-└── (docs/)            # [planowane] dodatkowa dokumentacja techniczna
+├── CLAUDE.md            # założenia techniczne + zasady dla asystenta
+├── NEEDS.md             # wymagania krytyczne
+├── DIRECTION.md         # wizja i dodatki
+├── INDEX.md             # ten plik — mapa + zasady pracy
+├── README.md            # setup i deploy (Supabase + Netlify, free)
+├── package.json         # zależności i skrypty (dev/build/lint/test)
+├── netlify.toml         # konfiguracja hostingu Netlify (free)
+├── .env.example         # wzór zmiennych środowiskowych Supabase
+├── supabase/
+│   ├── migrations/
+│   │   └── 0001_init.sql # schemat + invarianty + RPC (atomowość, lock) + RLS + realtime
+│   └── seed.sql          # dane demo do testów
+├── src/
+│   ├── main.tsx          # bootstrap React
+│   ├── App.tsx           # layout + zakładki: uczestnik / organizator
+│   ├── i18n/strings.ts   # CAŁY tekst UI (angielski; PL jako przyszły słownik)
+│   ├── types/domain.ts   # typy domenowe (lustro schematu DB)
+│   ├── lib/supabase.ts   # klient Supabase (czyta .env)
+│   ├── lib/actions.ts    # wywołania RPC (join/leave/lock) + mapowanie błędów
+│   ├── lib/rules.ts      # czysta ocena reguł MUST HAVE vs preferencja + status koloru
+│   ├── lib/rules.test.ts # testy jednostkowe logiki reguł (Vitest)
+│   ├── hooks/useTripData.ts     # ładowanie danych + subskrypcja realtime
+│   ├── pages/ParticipantView.tsx    # widok uczestnika (zapis/wypis/przepis)
+│   └── pages/OrganizerDashboard.tsx # dashboard: liczniki, kolor, lock, naruszenia
+└── .claude/             # hook SessionStart (instalacja zależności w sesjach web)
 ```
 
-### Kluczowe (planowane) obszary kodu i ich funkcje
-- **Model domenowy** — encje: Wyjazd, Pokój, Uczestnik, Przypisanie, Reguła
-  (preferencja/MUST HAVE), (opcjonalnie) Request preferencji. Definicja w `CLAUDE.md`.
-- **Logika zapisów** — atomowy zapis/przepisanie/wypisanie z gwarancją invariantów
-  (jeden pokój na osobę, brak przekroczenia limitu) — patrz `NEEDS.md §10`.
-- **Realtime** — podgląd na żywo obłożenia pokojów.
-- **Silnik reguł** — wykrywanie naruszeń MUST HAVE (krytyczne) vs niespełnionych
-  preferencji (informacyjne) + optymalizacja na żądanie (`NEEDS.md §9`).
-- **Dashboard organizatora** — liczniki, sygnalizacja kolorem, lock, ręczne korekty.
+### Kluczowe obszary kodu i ich funkcje
+- **Model domenowy** (`src/types/domain.ts`, `supabase/migrations`) — Wyjazd, Pokój,
+  Uczestnik, Przypisanie, Reguła (preferencja/MUST HAVE).
+- **Logika zapisów** (`supabase/migrations/0001_init.sql` → `join_room`/`leave_room`) —
+  atomowy zapis/przepisanie/wypisanie z gwarancją invariantów, odporny na wyścig
+  (blokada wiersza pokoju + `UNIQUE`) — `NEEDS.md §10`.
+- **Realtime** (`src/hooks/useTripData.ts`) — podgląd na żywo obłożenia pokojów.
+- **Silnik reguł** (`src/lib/rules.ts`) — wykrywanie naruszeń MUST HAVE (krytyczne)
+  vs niespełnionych preferencji (informacyjne). Optymalizacja na żądanie (`NEEDS.md §9`)
+  — jeszcze niezaimplementowana (kolejny krok).
+- **Dashboard organizatora** (`src/pages/OrganizerDashboard.tsx`) — liczniki,
+  sygnalizacja kolorem, lock. Ręczne korekty — kolejny krok.
 
 ---
 
