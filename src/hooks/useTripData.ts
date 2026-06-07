@@ -67,6 +67,8 @@ export function useTripData() {
       .on("postgres_changes", { event: "*", schema: "public", table: "assignments" }, () => void load())
       .on("postgres_changes", { event: "*", schema: "public", table: "rooms" }, () => void load())
       .on("postgres_changes", { event: "*", schema: "public", table: "trips" }, () => void load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "rules" }, () => void load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "participants" }, () => void load())
       .subscribe();
     return () => {
       void client.removeChannel(channel);

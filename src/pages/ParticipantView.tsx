@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { en } from "../i18n/strings";
 import { joinRoom, leaveRoom } from "../lib/actions";
+import { RulesEditor } from "../components/RulesEditor";
 import type { TripData } from "../hooks/useTripData";
 import type { Participant } from "../types/domain";
 
@@ -96,6 +97,8 @@ export function ParticipantView({
           );
         })}
       </ul>
+
+      <RulesEditor me={me} data={data} />
     </section>
   );
 }

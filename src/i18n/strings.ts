@@ -37,6 +37,21 @@ export const en = {
     spotsLeft: (n: number) => `${n} spot${n === 1 ? "" : "s"} left`,
     locked: "Sign-ups are locked by the organizer.",
   },
+  rules: {
+    heading: "My roommate preferences",
+    intro: "Optional. These help the organizer arrange rooms.",
+    sameGender: "Only share a room with the same gender",
+    sameGenderNoGender: "Set your gender above to use this preference.",
+    preferredPerson: "I'd like to share a room with",
+    preferredNone: "— no preference —",
+    strictness: "How important?",
+    preference: "Preference",
+    mustHave: "Required (must have)",
+    mustHaveWarning:
+      "Required rules can leave you unassigned if they can't be met. Use sparingly — a preference is usually enough.",
+    remove: "Remove",
+    notMet: "Not met by your current room.",
+  },
   organizer: {
     title: "Organizer dashboard",
     signedUp: "Signed up",

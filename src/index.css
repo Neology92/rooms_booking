@@ -60,3 +60,10 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .identity { display: flex; gap: 0.75rem; align-items: center; justify-content: space-between; padding: 0.5rem 0.75rem; background: #fff; border: 1px solid var(--line); border-radius: 8px; margin-bottom: 0.75rem; }
 .linklike { background: none; border: none; color: #2563eb; cursor: pointer; padding: 0; font: inherit; text-decoration: underline; }
+
+.rules-editor { margin-top: 1.5rem; border-top: 1px solid var(--line); padding-top: 1rem; }
+.rule-block { margin: 0.75rem 0; padding: 0.75rem; background: #fff; border: 1px solid var(--line); border-radius: 8px; }
+.checkline { display: flex; gap: 0.5rem; align-items: center; }
+.strictness { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; margin-top: 0.5rem; }
+.radio { display: inline-flex; gap: 0.3rem; align-items: center; }
+.warn { color: #854d0e; flex-basis: 100%; margin: 0.25rem 0 0; }

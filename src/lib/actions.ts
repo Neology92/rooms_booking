@@ -1,5 +1,6 @@
 import { supabase } from "./supabase";
 import { en } from "../i18n/strings";
+import type { RuleStrictness, RuleType } from "../types/domain";
 
 export interface ActionResult {
   ok: boolean;
@@ -66,4 +67,32 @@ export async function registerParticipant(
   });
   if (error) return { ok: false, error: toMessage(error.message) };
   return { ok: true, id: data as string };
+}
+
+export async function setRule(
+  participantId: string,
+  type: RuleType,
+  strictness: RuleStrictness,
+  targetParticipantId?: string,
+): Promise<ActionResult> {
+  if (!supabase) return { ok: false, error: en.errors.UNKNOWN };
+  const { error } = await supabase.rpc("set_rule", {
+    p_participant_id: participantId,
+    p_type: type,
+    p_strictness: strictness,
+    p_target_participant_id: targetParticipantId ?? null,
+  });
+  return error ? { ok: false, error: toMessage(error.message) } : { ok: true };
+}
+
+export async function clearRule(
+  participantId: string,
+  type: RuleType,
+): Promise<ActionResult> {
+  if (!supabase) return { ok: false, error: en.errors.UNKNOWN };
+  const { error } = await supabase.rpc("clear_rule", {
+    p_participant_id: participantId,
+    p_type: type,
+  });
+  return error ? { ok: false, error: toMessage(error.message) } : { ok: true };
 }
