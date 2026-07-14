@@ -3,6 +3,15 @@
   command = "npm run build"
   publish = "dist"
 
+# Supabase client config. These are PUBLIC client keys: the anon key is designed
+# to ship in the frontend bundle and data access is guarded by Row Level Security
+# (see supabase/migrations/0001_init.sql), not by keeping the key secret. Safe to
+# commit. To point at a different Supabase project, override these in the Netlify
+# dashboard (Site configuration → Environment variables) — dashboard values win.
+[build.environment]
+  VITE_SUPABASE_URL = "https://zqxlxvgwydmxpfznizvg.supabase.co"
+  VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpxeGx4dmd3eWRteHBmem5penZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQwMzU4NDIsImV4cCI6MjA5OTYxMTg0Mn0.ZJhYVnZwA4PZ3zogGPbZ4G4eaNf1U2MBF5wJsFGWm_E"
+
 # SPA fallback: every route serves index.html.
 [[redirects]]
   from = "/*"
