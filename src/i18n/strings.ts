@@ -70,6 +70,19 @@ export const en = {
     unassigned: "— Unassigned —",
     roomFullOption: (name: string) => `${name} (full)`,
     noParticipants: "No participants yet.",
+    signOut: "Sign out",
+    signedIn: "Organizer mode",
+  },
+  organizerAuth: {
+    claimHeading: "Claim this trip",
+    claimIntro:
+      "No organizer passcode is set yet. Choose one to become this trip's organizer. Keep it safe — anyone with it can manage the trip.",
+    loginHeading: "Organizer sign-in",
+    loginIntro: "Enter the organizer passcode to manage rooms and the sign-up lock.",
+    passcode: "Organizer passcode",
+    claimSubmit: "Claim trip",
+    loginSubmit: "Unlock controls",
+    viewOnly: "You're viewing the dashboard read-only. Sign in as organizer to make changes.",
   },
   errors: {
     ROOM_FULL: "That room is already full.",
@@ -78,6 +91,10 @@ export const en = {
     PARTICIPANT_NOT_IN_TRIP: "You are not part of this trip.",
     NAME_REQUIRED: "Please enter your name.",
     TRIP_NOT_FOUND: "Trip not found.",
+    NOT_ORGANIZER: "Wrong organizer passcode.",
+    PASSCODE_TOO_SHORT: "Passcode must be at least 4 characters.",
+    TARGET_REQUIRED: "Pick a person for this preference.",
+    TARGET_IS_SELF: "You can't pick yourself.",
     UNKNOWN: "Something went wrong. Please try again.",
   },
 } as const;

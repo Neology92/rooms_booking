@@ -39,13 +39,49 @@ export async function leaveRoom(participantId: string): Promise<ActionResult> {
 export async function setSignupsLock(
   tripId: string,
   locked: boolean,
+  passcode: string,
 ): Promise<ActionResult> {
   if (!supabase) return { ok: false, error: en.errors.UNKNOWN };
   const { error } = await supabase.rpc("set_signups_lock", {
     p_trip_id: tripId,
     p_locked: locked,
+    p_passcode: passcode,
   });
   return error ? { ok: false, error: toMessage(error.message) } : { ok: true };
+}
+
+// ---- organizer authorization (Phase 4) -------------------------------------
+// Claim a trip (first passcode) or rotate it. `current` is ignored for an
+// unclaimed trip and required to change an existing passcode.
+export async function setOrganizerPasscode(
+  tripId: string,
+  current: string,
+  next: string,
+): Promise<ActionResult> {
+  if (!supabase) return { ok: false, error: en.errors.UNKNOWN };
+  const { error } = await supabase.rpc("set_organizer_passcode", {
+    p_trip_id: tripId,
+    p_current_passcode: current,
+    p_new_passcode: next,
+  });
+  return error ? { ok: false, error: toMessage(error.message) } : { ok: true };
+}
+
+export interface VerifyResult extends ActionResult {
+  valid?: boolean;
+}
+
+export async function verifyOrganizer(
+  tripId: string,
+  passcode: string,
+): Promise<VerifyResult> {
+  if (!supabase) return { ok: false, error: en.errors.UNKNOWN };
+  const { data, error } = await supabase.rpc("verify_organizer", {
+    p_trip_id: tripId,
+    p_passcode: passcode,
+  });
+  if (error) return { ok: false, error: toMessage(error.message) };
+  return { ok: true, valid: data as boolean };
 }
 
 export interface RegisterResult extends ActionResult {
@@ -102,21 +138,25 @@ export async function clearRule(
 export async function adminAssign(
   participantId: string,
   roomId: string,
+  passcode: string,
 ): Promise<ActionResult> {
   if (!supabase) return { ok: false, error: en.errors.UNKNOWN };
   const { error } = await supabase.rpc("admin_assign", {
     p_participant_id: participantId,
     p_room_id: roomId,
+    p_passcode: passcode,
   });
   return error ? { ok: false, error: toMessage(error.message) } : { ok: true };
 }
 
 export async function adminUnassign(
   participantId: string,
+  passcode: string,
 ): Promise<ActionResult> {
   if (!supabase) return { ok: false, error: en.errors.UNKNOWN };
   const { error } = await supabase.rpc("admin_unassign", {
     p_participant_id: participantId,
+    p_passcode: passcode,
   });
   return error ? { ok: false, error: toMessage(error.message) } : { ok: true };
 }

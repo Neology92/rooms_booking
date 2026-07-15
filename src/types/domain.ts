@@ -8,6 +8,7 @@ export interface Trip {
   name: string;
   target_headcount: number | null;
   signups_locked: boolean;
+  organizer_claimed: boolean;
 }
 
 export interface Room {

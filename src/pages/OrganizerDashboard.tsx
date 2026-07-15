@@ -2,14 +2,28 @@ import { useMemo, useState } from "react";
 import { en } from "../i18n/strings";
 import { adminAssign, adminUnassign, setSignupsLock } from "../lib/actions";
 import { splitBySeverity, tripStatus, unmetRules } from "../lib/rules";
+import { OrganizerAuth } from "../components/OrganizerAuth";
 import type { TripData } from "../hooks/useTripData";
 
 const t = en.organizer;
 
-export function OrganizerDashboard({ data }: { data: TripData }) {
+export function OrganizerDashboard({
+  data,
+  passcode,
+  onAuthed,
+  onSignOut,
+  onReload,
+}: {
+  data: TripData;
+  passcode: string | null;
+  onAuthed: (passcode: string) => void;
+  onSignOut: () => void;
+  onReload: () => void;
+}) {
   const { trip, rooms, participants, assignments, rules } = data;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const authed = passcode !== null;
 
   const nameOf = (id: string) =>
     participants.find((p) => p.id === id)?.name ?? "?";
@@ -20,12 +34,17 @@ export function OrganizerDashboard({ data }: { data: TripData }) {
   const fillOf = (roomId: string) =>
     assignments.filter((a) => a.room_id === roomId).length;
 
+  // Run an organizer action; a stale passcode (NOT_ORGANIZER) drops us back to
+  // the sign-in panel so the organizer can re-enter it.
   async function act(fn: () => Promise<{ ok: boolean; error?: string }>) {
     setError("");
     setBusy(true);
     const res = await fn();
-    if (!res.ok) setError(res.error ?? "");
     setBusy(false);
+    if (!res.ok) {
+      setError(res.error ?? "");
+      if (res.error === en.errors.NOT_ORGANIZER) onSignOut();
+    }
   }
 
   const unmet = useMemo(
@@ -37,13 +56,7 @@ export function OrganizerDashboard({ data }: { data: TripData }) {
   const status = tripStatus(signedUp, trip?.target_headcount ?? null, critical.length);
 
   if (!trip) return null;
-
-  async function toggleLock() {
-    if (!trip) return;
-    setBusy(true);
-    await setSignupsLock(trip.id, !trip.signups_locked);
-    setBusy(false);
-  }
+  const tripId = trip.id;
 
   return (
     <section>
@@ -55,12 +68,24 @@ export function OrganizerDashboard({ data }: { data: TripData }) {
             {trip.target_headcount != null && ` / ${trip.target_headcount}`}
           </span>
         </div>
-        <button onClick={toggleLock} disabled={busy}>
-          {trip.signups_locked ? t.unlockSignups : t.lockSignups}
-        </button>
+        {authed && (
+          <button
+            onClick={() =>
+              act(() => setSignupsLock(tripId, !trip.signups_locked, passcode))
+            }
+            disabled={busy}
+          >
+            {trip.signups_locked ? t.unlockSignups : t.lockSignups}
+          </button>
+        )}
         <span className={`tag ${trip.signups_locked ? "tag--full" : ""}`}>
           {trip.signups_locked ? t.locked : t.open}
         </span>
+        {authed && (
+          <button className="linklike" onClick={onSignOut}>
+            {t.signOut}
+          </button>
+        )}
       </div>
 
       <h2>{t.occupancy}</h2>
@@ -83,50 +108,63 @@ export function OrganizerDashboard({ data }: { data: TripData }) {
         })}
       </ul>
 
-      <h2>{t.manage}</h2>
-      <p className="muted">{t.manageIntro}</p>
-      {error && <p className="banner banner--error">{error}</p>}
-      {participants.length === 0 ? (
-        <p className="muted">{t.noParticipants}</p>
+      {!authed ? (
+        <OrganizerAuth
+          tripId={tripId}
+          claimed={trip.organizer_claimed}
+          onAuthed={onAuthed}
+          onClaimed={onReload}
+        />
       ) : (
-        <ul className="assign">
-          {participants.map((p) => {
-            const current = roomOf(p.id);
-            return (
-              <li key={p.id} className="assign__row">
-                <span className="assign__name">
-                  {p.name}
-                  {p.gender && <span className="tag tag--gender">{p.gender}</span>}
-                </span>
-                <select
-                  value={current}
-                  disabled={busy}
-                  onChange={(e) =>
-                    act(() =>
-                      e.target.value
-                        ? adminAssign(p.id, e.target.value)
-                        : adminUnassign(p.id),
-                    )
-                  }
-                >
-                  <option value="">{t.unassigned}</option>
-                  {rooms.map((room) => {
-                    const count = fillOf(room.id);
-                    const isCurrent = current === room.id;
-                    const full = count >= room.capacity && !isCurrent;
-                    return (
-                      <option key={room.id} value={room.id} disabled={full}>
-                        {full
-                          ? t.roomFullOption(room.name)
-                          : `${room.name} (${count}/${room.capacity})`}
-                      </option>
-                    );
-                  })}
-                </select>
-              </li>
-            );
-          })}
-        </ul>
+        <>
+          <h2>{t.manage}</h2>
+          <p className="muted">{t.manageIntro}</p>
+          {error && <p className="banner banner--error">{error}</p>}
+          {participants.length === 0 ? (
+            <p className="muted">{t.noParticipants}</p>
+          ) : (
+            <ul className="assign">
+              {participants.map((p) => {
+                const current = roomOf(p.id);
+                return (
+                  <li key={p.id} className="assign__row">
+                    <span className="assign__name">
+                      {p.name}
+                      {p.gender && (
+                        <span className="tag tag--gender">{p.gender}</span>
+                      )}
+                    </span>
+                    <select
+                      value={current}
+                      disabled={busy}
+                      onChange={(e) =>
+                        act(() =>
+                          e.target.value
+                            ? adminAssign(p.id, e.target.value, passcode)
+                            : adminUnassign(p.id, passcode),
+                        )
+                      }
+                    >
+                      <option value="">{t.unassigned}</option>
+                      {rooms.map((room) => {
+                        const count = fillOf(room.id);
+                        const isCurrent = current === room.id;
+                        const full = count >= room.capacity && !isCurrent;
+                        return (
+                          <option key={room.id} value={room.id} disabled={full}>
+                            {full
+                              ? t.roomFullOption(room.name)
+                              : `${room.name} (${count}/${room.capacity})`}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </>
       )}
 
       <h2>{t.issues}</h2>

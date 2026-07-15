@@ -35,7 +35,11 @@ export function useTripData() {
       setLoading(false);
       return;
     }
-    const { data: trips } = await supabase.from("trips").select("*").limit(1);
+    // Explicit columns: never pull organizer_passcode_hash to the client.
+    const { data: trips } = await supabase
+      .from("trips")
+      .select("id, name, target_headcount, signups_locked, organizer_claimed")
+      .limit(1);
     const trip = trips?.[0] ?? null;
     if (!trip) {
       setData(empty);

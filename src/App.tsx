@@ -3,6 +3,7 @@ import { en } from "./i18n/strings";
 import { isConfigured } from "./lib/supabase";
 import { useTripData } from "./hooks/useTripData";
 import { useIdentity } from "./hooks/useIdentity";
+import { useOrganizer } from "./hooks/useOrganizer";
 import { Onboarding } from "./components/Onboarding";
 import { ParticipantView } from "./pages/ParticipantView";
 import { OrganizerDashboard } from "./pages/OrganizerDashboard";
@@ -13,6 +14,7 @@ export default function App() {
   const [tab, setTab] = useState<Tab>("participant");
   const data = useTripData();
   const identity = useIdentity(data.trip?.id);
+  const organizer = useOrganizer(data.trip?.id);
   const me = data.participants.find((p) => p.id === identity.id) ?? null;
 
   function renderParticipant() {
@@ -58,7 +60,13 @@ export default function App() {
       ) : tab === "participant" ? (
         renderParticipant()
       ) : (
-        <OrganizerDashboard data={data} />
+        <OrganizerDashboard
+          data={data}
+          passcode={organizer.passcode}
+          onAuthed={organizer.save}
+          onSignOut={organizer.clear}
+          onReload={() => void data.reload()}
+        />
       )}
     </main>
   );
