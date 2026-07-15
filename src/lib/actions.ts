@@ -96,3 +96,27 @@ export async function clearRule(
   });
   return error ? { ok: false, error: toMessage(error.message) } : { ok: true };
 }
+
+// Organizer overrides (Phase 3): place/remove a participant, bypassing the lock
+// but still enforcing capacity + one-room-per-person server-side.
+export async function adminAssign(
+  participantId: string,
+  roomId: string,
+): Promise<ActionResult> {
+  if (!supabase) return { ok: false, error: en.errors.UNKNOWN };
+  const { error } = await supabase.rpc("admin_assign", {
+    p_participant_id: participantId,
+    p_room_id: roomId,
+  });
+  return error ? { ok: false, error: toMessage(error.message) } : { ok: true };
+}
+
+export async function adminUnassign(
+  participantId: string,
+): Promise<ActionResult> {
+  if (!supabase) return { ok: false, error: en.errors.UNKNOWN };
+  const { error } = await supabase.rpc("admin_unassign", {
+    p_participant_id: participantId,
+  });
+  return error ? { ok: false, error: toMessage(error.message) } : { ok: true };
+}

@@ -122,10 +122,15 @@ Zrobione: lista pokojów + obłożenie na żywo, atomowy zapis/przepisanie/wypis
 serwera, dashboard organizatora (liczniki, status kolorem, sygnalizacja MUST HAVE vs
 preferencja).
 
+Doszło: onboarding uczestnika (imię/e-mail/płeć), reguły uczestnika (same-gender /
+preferowana osoba, twarde vs miękkie), **ręczne korekty organizatora** (`admin_assign` /
+`admin_unassign` — override przypisań w dashboardzie, omija lock, ale pilnuje
+pojemności i „jeden pokój na osobę").
+
 Kolejne kroki (świadomie odłożone, zgodne z `NEEDS`/`DIRECTION`):
-- **Auth + autoryzacja organizatora** — obecnie RPC `set_signups_lock` i edycje nie są
-  ograniczone do organizatora (RLS tylko do odczytu, zapisy przez RPC bez ról).
-  To **dług do spłaty** zanim aplikacja pójdzie publicznie.
-- **Ręczne korekty organizatora** (`NEEDS §5`) — override przypisań w dashboardzie.
+- **Auth + autoryzacja organizatora** — obecnie RPC (`set_signups_lock`, `admin_assign`,
+  `admin_unassign`, `register_participant`, `set_rule`) nie są ograniczone do organizatora
+  (RLS tylko do odczytu, zapisy przez SECURITY DEFINER bez ról). To **dług do spłaty**
+  zanim aplikacja pójdzie publicznie.
 - **Optymalizacja na żądanie** (`NEEDS §9`) — propozycje zamian.
 - **Wysyłka e-maili**, **polski locale**, **requesty preferencji** — `DIRECTION.md`.

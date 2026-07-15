@@ -61,6 +61,12 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .identity { display: flex; gap: 0.75rem; align-items: center; justify-content: space-between; padding: 0.5rem 0.75rem; background: #fff; border: 1px solid var(--line); border-radius: 8px; margin-bottom: 0.75rem; }
 .linklike { background: none; border: none; color: #2563eb; cursor: pointer; padding: 0; font: inherit; text-decoration: underline; }
 
+.assign { list-style: none; padding: 0; margin: 0.5rem 0; display: grid; gap: 0.4rem; }
+.assign__row { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.5rem 0.7rem; background: #fff; border: 1px solid var(--line); border-radius: 8px; }
+.assign__name { display: flex; align-items: center; gap: 0.5rem; }
+.assign__row select { font: inherit; padding: 0.35rem 0.5rem; border-radius: 8px; border: 1px solid var(--line); }
+.tag--gender { background: #eef2ff; color: #3730a3; text-transform: capitalize; }
+
 .rules-editor { margin-top: 1.5rem; border-top: 1px solid var(--line); padding-top: 1rem; }
 .rule-block { margin: 0.75rem 0; padding: 0.75rem; background: #fff; border: 1px solid var(--line); border-radius: 8px; }
 .checkline { display: flex; gap: 0.5rem; align-items: center; }

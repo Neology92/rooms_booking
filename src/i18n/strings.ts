@@ -65,6 +65,11 @@ export const en = {
     allGood: "All rules satisfied",
     mustHaveViolation: "MUST-HAVE not met",
     preferenceUnmet: "Preference not met",
+    manage: "Assignments",
+    manageIntro: "Place participants into rooms manually. Works even while sign-ups are locked.",
+    unassigned: "— Unassigned —",
+    roomFullOption: (name: string) => `${name} (full)`,
+    noParticipants: "No participants yet.",
   },
   errors: {
     ROOM_FULL: "That room is already full.",

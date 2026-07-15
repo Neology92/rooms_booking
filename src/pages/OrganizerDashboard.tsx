@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { en } from "../i18n/strings";
-import { setSignupsLock } from "../lib/actions";
+import { adminAssign, adminUnassign, setSignupsLock } from "../lib/actions";
 import { splitBySeverity, tripStatus, unmetRules } from "../lib/rules";
 import type { TripData } from "../hooks/useTripData";
 
@@ -9,9 +9,24 @@ const t = en.organizer;
 export function OrganizerDashboard({ data }: { data: TripData }) {
   const { trip, rooms, participants, assignments, rules } = data;
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
 
   const nameOf = (id: string) =>
     participants.find((p) => p.id === id)?.name ?? "?";
+
+  const roomOf = (participantId: string) =>
+    assignments.find((a) => a.participant_id === participantId)?.room_id ?? "";
+
+  const fillOf = (roomId: string) =>
+    assignments.filter((a) => a.room_id === roomId).length;
+
+  async function act(fn: () => Promise<{ ok: boolean; error?: string }>) {
+    setError("");
+    setBusy(true);
+    const res = await fn();
+    if (!res.ok) setError(res.error ?? "");
+    setBusy(false);
+  }
 
   const unmet = useMemo(
     () => unmetRules(rules, assignments, participants),
@@ -67,6 +82,52 @@ export function OrganizerDashboard({ data }: { data: TripData }) {
           );
         })}
       </ul>
+
+      <h2>{t.manage}</h2>
+      <p className="muted">{t.manageIntro}</p>
+      {error && <p className="banner banner--error">{error}</p>}
+      {participants.length === 0 ? (
+        <p className="muted">{t.noParticipants}</p>
+      ) : (
+        <ul className="assign">
+          {participants.map((p) => {
+            const current = roomOf(p.id);
+            return (
+              <li key={p.id} className="assign__row">
+                <span className="assign__name">
+                  {p.name}
+                  {p.gender && <span className="tag tag--gender">{p.gender}</span>}
+                </span>
+                <select
+                  value={current}
+                  disabled={busy}
+                  onChange={(e) =>
+                    act(() =>
+                      e.target.value
+                        ? adminAssign(p.id, e.target.value)
+                        : adminUnassign(p.id),
+                    )
+                  }
+                >
+                  <option value="">{t.unassigned}</option>
+                  {rooms.map((room) => {
+                    const count = fillOf(room.id);
+                    const isCurrent = current === room.id;
+                    const full = count >= room.capacity && !isCurrent;
+                    return (
+                      <option key={room.id} value={room.id} disabled={full}>
+                        {full
+                          ? t.roomFullOption(room.name)
+                          : `${room.name} (${count}/${room.capacity})`}
+                      </option>
+                    );
+                  })}
+                </select>
+              </li>
+            );
+          })}
+        </ul>
+      )}
 
       <h2>{t.issues}</h2>
       {critical.length === 0 && preferences.length === 0 ? (
