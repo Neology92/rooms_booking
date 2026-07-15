@@ -127,10 +127,20 @@ preferowana osoba, twarde vs miękkie), **ręczne korekty organizatora** (`admin
 `admin_unassign` — override przypisań w dashboardzie, omija lock, ale pilnuje
 pojemności i „jeden pokój na osobę").
 
+Faza 4 — **autoryzacja organizatora** (`0005`): każdy wyjazd ma kod organizatora
+(bcrypt via pgcrypto); pierwszy ustawiający kod „przejmuje" wyjazd. RPC-y organizatora
+(`set_signups_lock`, `admin_assign`, `admin_unassign`, `admin_swap`) weryfikują kod
+przez `assert_organizer` — egzekwowanie po stronie serwera (`NEEDS §10.3`). Uczestnicy
+pozostają bez kont. Hash kodu nigdy nie trafia do klienta.
+
+Faza 5 — **optymalizacja na żądanie** (`NEEDS §9`, `0006`): czysta heurystyka
+(`src/lib/optimize.ts`, testy jednostkowe) proponuje **zamiany** pokojów — najpierw
+naprawia MUST HAVE, potem preferencje; zamiana zachowuje limity pokojów. Zastosowanie
+propozycji przez atomowe `admin_swap`.
+
 Kolejne kroki (świadomie odłożone, zgodne z `NEEDS`/`DIRECTION`):
-- **Auth + autoryzacja organizatora** — obecnie RPC (`set_signups_lock`, `admin_assign`,
-  `admin_unassign`, `register_participant`, `set_rule`) nie są ograniczone do organizatora
-  (RLS tylko do odczytu, zapisy przez SECURITY DEFINER bez ról). To **dług do spłaty**
-  zanim aplikacja pójdzie publicznie.
-- **Optymalizacja na żądanie** (`NEEDS §9`) — propozycje zamian.
-- **Wysyłka e-maili**, **polski locale**, **requesty preferencji** — `DIRECTION.md`.
+- **Tworzenie wyjazdu i pokojów z UI** — dziś przez seed/SQL; organizator nie powinien
+  dotykać bazy.
+- **Testy współbieżności** krytycznych ścieżek (limit/lock) — `CLAUDE §5`.
+- **Pełne konta użytkowników / per-user auth**, **wysyłka e-maili**, **polski locale**,
+  **requesty preferencji negocjowane między uczestnikami**, docelowy **solver** — `DIRECTION.md`.

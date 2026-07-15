@@ -1,7 +1,13 @@
 import { useMemo, useState } from "react";
 import { en } from "../i18n/strings";
-import { adminAssign, adminUnassign, setSignupsLock } from "../lib/actions";
+import {
+  adminAssign,
+  adminSwap,
+  adminUnassign,
+  setSignupsLock,
+} from "../lib/actions";
 import { splitBySeverity, tripStatus, unmetRules } from "../lib/rules";
+import { optimize, type OptimizeResult } from "../lib/optimize";
 import { OrganizerAuth } from "../components/OrganizerAuth";
 import type { TripData } from "../hooks/useTripData";
 
@@ -23,10 +29,16 @@ export function OrganizerDashboard({
   const { trip, rooms, participants, assignments, rules } = data;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [opt, setOpt] = useState<OptimizeResult | null>(null);
   const authed = passcode !== null;
 
   const nameOf = (id: string) =>
     participants.find((p) => p.id === id)?.name ?? "?";
+
+  const roomNameOf = (participantId: string) => {
+    const roomId = assignments.find((x) => x.participant_id === participantId)?.room_id;
+    return rooms.find((r) => r.id === roomId)?.name ?? "?";
+  };
 
   const roomOf = (participantId: string) =>
     assignments.find((a) => a.participant_id === participantId)?.room_id ?? "";
@@ -163,6 +175,54 @@ export function OrganizerDashboard({
                 );
               })}
             </ul>
+          )}
+
+          <h2>{t.optimize}</h2>
+          <p className="muted">{t.optimizeIntro}</p>
+          <button
+            disabled={busy}
+            onClick={() => setOpt(optimize(participants, assignments, rules))}
+          >
+            {t.optimizeRun}
+          </button>
+          {opt && opt.proposals.length === 0 && (
+            <p className="banner banner--ok">{t.optimizeNone}</p>
+          )}
+          {opt && opt.proposals.length > 0 && (
+            <>
+              <p className="muted">
+                {t.optimizeSummary(
+                  opt.before.critical - opt.after.critical,
+                  opt.before.preferences - opt.after.preferences,
+                )}
+              </p>
+              <ul className="assign">
+                {opt.proposals.map((s, i) => (
+                  <li key={`${s.aId}-${s.bId}-${i}`} className="assign__row">
+                    <span className="assign__name">
+                      {t.swapWith(
+                        nameOf(s.aId),
+                        roomNameOf(s.aId),
+                        nameOf(s.bId),
+                        roomNameOf(s.bId),
+                      )}
+                    </span>
+                    <button
+                      disabled={busy}
+                      onClick={() =>
+                        act(async () => {
+                          const res = await adminSwap(s.aId, s.bId, passcode);
+                          if (res.ok) setOpt(null); // stale after the swap
+                          return res;
+                        })
+                      }
+                    >
+                      {t.apply}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </>
           )}
         </>
       )}

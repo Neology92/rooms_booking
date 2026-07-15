@@ -160,3 +160,18 @@ export async function adminUnassign(
   });
   return error ? { ok: false, error: toMessage(error.message) } : { ok: true };
 }
+
+// Apply one optimizer swap proposal (Phase 5): two participants exchange rooms.
+export async function adminSwap(
+  aId: string,
+  bId: string,
+  passcode: string,
+): Promise<ActionResult> {
+  if (!supabase) return { ok: false, error: en.errors.UNKNOWN };
+  const { error } = await supabase.rpc("admin_swap", {
+    p_a: aId,
+    p_b: bId,
+    p_passcode: passcode,
+  });
+  return error ? { ok: false, error: toMessage(error.message) } : { ok: true };
+}

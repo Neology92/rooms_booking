@@ -72,6 +72,15 @@ export const en = {
     noParticipants: "No participants yet.",
     signOut: "Sign out",
     signedIn: "Organizer mode",
+    optimize: "Optimization",
+    optimizeIntro: "Suggest room swaps — fixes MUST-HAVE violations first, then preferences.",
+    optimizeRun: "Suggest swaps",
+    optimizeNone: "No improving swaps found. Current arrangement is as good as swaps allow.",
+    optimizeSummary: (crit: number, pref: number) =>
+      `Would fix ${crit} MUST-HAVE and ${pref} preference issue${pref === 1 ? "" : "s"}.`,
+    swapWith: (aName: string, aRoom: string, bName: string, bRoom: string) =>
+      `Swap ${aName} (${aRoom}) ↔ ${bName} (${bRoom})`,
+    apply: "Apply",
   },
   organizerAuth: {
     claimHeading: "Claim this trip",
@@ -93,6 +102,7 @@ export const en = {
     TRIP_NOT_FOUND: "Trip not found.",
     NOT_ORGANIZER: "Wrong organizer passcode.",
     PASSCODE_TOO_SHORT: "Passcode must be at least 4 characters.",
+    PARTICIPANT_NOT_ASSIGNED: "That participant isn't in a room.",
     TARGET_REQUIRED: "Pick a person for this preference.",
     TARGET_IS_SELF: "You can't pick yourself.",
     UNKNOWN: "Something went wrong. Please try again.",
