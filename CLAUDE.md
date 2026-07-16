@@ -138,9 +138,15 @@ Faza 5 — **optymalizacja na żądanie** (`NEEDS §9`, `0006`): czysta heurysty
 naprawia MUST HAVE, potem preferencje; zamiana zachowuje limity pokojów. Zastosowanie
 propozycji przez atomowe `admin_swap`.
 
+Faza 6 — **tworzenie wyjazdu i pokojów z UI** (`NEEDS §2/§3`, `0007`): `create_trip`
+(tworzy i od razu przejmuje wyjazd kodem), CRUD pokojów (`admin_create_room` /
+`admin_update_room` / `admin_delete_room`) i `admin_set_target` — wszystko
+organizator-only, z pilnowaniem invariantów (pojemność ≥ obłożenie, pokój z ludźmi
+nieusuwalny). Wybór wyjazdu przez `?trip=<id>` w URL (shareable), landing = picker
+z listą wyjazdów i formularzem tworzenia. Migracja `0008` naprawia search_path
+funkcji pgcrypto (na Supabase `crypt`/`gen_salt` żyją w schemacie `extensions`).
+
 Kolejne kroki (świadomie odłożone, zgodne z `NEEDS`/`DIRECTION`):
-- **Tworzenie wyjazdu i pokojów z UI** — dziś przez seed/SQL; organizator nie powinien
-  dotykać bazy.
 - **Testy współbieżności** krytycznych ścieżek (limit/lock) — `CLAUDE §5`.
 - **Pełne konta użytkowników / per-user auth**, **wysyłka e-maili**, **polski locale**,
   **requesty preferencji negocjowane między uczestnikami**, docelowy **solver** — `DIRECTION.md`.

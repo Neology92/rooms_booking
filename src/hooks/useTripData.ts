@@ -24,14 +24,16 @@ const empty: TripData = {
   rules: [],
 };
 
-// Loads a single trip's data and keeps it live via Supabase Realtime (NEEDS §4/§5).
-// Any change to assignments/rooms/trips triggers a refetch so occupancy stays current.
-export function useTripData() {
+// Loads one trip's data (by id) and keeps it live via Supabase Realtime
+// (NEEDS §4/§5). Any change to assignments/rooms/trips triggers a refetch so
+// occupancy stays current. With no tripId, nothing loads (the trip picker shows).
+export function useTripData(tripId: string | undefined) {
   const [data, setData] = useState<TripData>(empty);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
-    if (!supabase) {
+    if (!supabase || !tripId) {
+      setData(empty);
       setLoading(false);
       return;
     }
@@ -39,6 +41,7 @@ export function useTripData() {
     const { data: trips } = await supabase
       .from("trips")
       .select("id, name, target_headcount, signups_locked, organizer_claimed")
+      .eq("id", tripId)
       .limit(1);
     const trip = trips?.[0] ?? null;
     if (!trip) {
@@ -60,7 +63,7 @@ export function useTripData() {
       rules: rules.data ?? [],
     });
     setLoading(false);
-  }, []);
+  }, [tripId]);
 
   useEffect(() => {
     void load();

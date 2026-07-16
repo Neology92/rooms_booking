@@ -161,6 +161,84 @@ export async function adminUnassign(
   return error ? { ok: false, error: toMessage(error.message) } : { ok: true };
 }
 
+// ---- trip & room management (NEEDS §2/§3) ----------------------------------
+export async function createTrip(
+  name: string,
+  targetHeadcount: number | null,
+  passcode: string,
+): Promise<RegisterResult> {
+  if (!supabase) return { ok: false, error: en.errors.UNKNOWN };
+  const { data, error } = await supabase.rpc("create_trip", {
+    p_name: name,
+    p_target_headcount: targetHeadcount,
+    p_passcode: passcode,
+  });
+  if (error) return { ok: false, error: toMessage(error.message) };
+  return { ok: true, id: data as string };
+}
+
+export async function adminCreateRoom(
+  tripId: string,
+  name: string,
+  capacity: number,
+  info: string,
+  passcode: string,
+): Promise<ActionResult> {
+  if (!supabase) return { ok: false, error: en.errors.UNKNOWN };
+  const { error } = await supabase.rpc("admin_create_room", {
+    p_trip_id: tripId,
+    p_name: name,
+    p_capacity: capacity,
+    p_info: info,
+    p_passcode: passcode,
+  });
+  return error ? { ok: false, error: toMessage(error.message) } : { ok: true };
+}
+
+export async function adminUpdateRoom(
+  roomId: string,
+  name: string,
+  capacity: number,
+  info: string,
+  passcode: string,
+): Promise<ActionResult> {
+  if (!supabase) return { ok: false, error: en.errors.UNKNOWN };
+  const { error } = await supabase.rpc("admin_update_room", {
+    p_room_id: roomId,
+    p_name: name,
+    p_capacity: capacity,
+    p_info: info,
+    p_passcode: passcode,
+  });
+  return error ? { ok: false, error: toMessage(error.message) } : { ok: true };
+}
+
+export async function adminDeleteRoom(
+  roomId: string,
+  passcode: string,
+): Promise<ActionResult> {
+  if (!supabase) return { ok: false, error: en.errors.UNKNOWN };
+  const { error } = await supabase.rpc("admin_delete_room", {
+    p_room_id: roomId,
+    p_passcode: passcode,
+  });
+  return error ? { ok: false, error: toMessage(error.message) } : { ok: true };
+}
+
+export async function adminSetTarget(
+  tripId: string,
+  target: number | null,
+  passcode: string,
+): Promise<ActionResult> {
+  if (!supabase) return { ok: false, error: en.errors.UNKNOWN };
+  const { error } = await supabase.rpc("admin_set_target", {
+    p_trip_id: tripId,
+    p_target: target,
+    p_passcode: passcode,
+  });
+  return error ? { ok: false, error: toMessage(error.message) } : { ok: true };
+}
+
 // Apply one optimizer swap proposal (Phase 5): two participants exchange rooms.
 export async function adminSwap(
   aId: string,

@@ -67,6 +67,16 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .assign__row select { font: inherit; padding: 0.35rem 0.5rem; border-radius: 8px; border: 1px solid var(--line); }
 .tag--gender { background: #eef2ff; color: #3730a3; text-transform: capitalize; }
 
+.room-form { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; margin: 0.5rem 0; }
+.room-form input { font: inherit; padding: 0.4rem 0.5rem; border-radius: 8px; border: 1px solid var(--line); }
+.room-form input[type="number"] { width: 5rem; }
+.room-form--row { padding: 0.5rem 0.7rem; background: #fff; border: 1px solid var(--line); border-radius: 8px; }
+.room-form button { font: inherit; padding: 0.4rem 0.7rem; border-radius: 8px; border: 1px solid #111827; background: #111827; color: #fff; cursor: pointer; }
+.room-form button.danger { background: #fff; color: #991b1b; border-color: #fca5a5; }
+.room-form button:disabled { opacity: 0.5; cursor: not-allowed; }
+.target-form { display: flex; gap: 0.5rem; align-items: flex-end; margin: 0.75rem 0; }
+.target-form button { font: inherit; padding: 0.45rem 0.8rem; border-radius: 8px; border: 1px solid #111827; background: #111827; color: #fff; cursor: pointer; }
+
 .rules-editor { margin-top: 1.5rem; border-top: 1px solid var(--line); padding-top: 1rem; }
 .rule-block { margin: 0.75rem 0; padding: 0.75rem; background: #fff; border: 1px solid var(--line); border-radius: 8px; }
 .checkline { display: flex; gap: 0.5rem; align-items: center; }

@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { en } from "../i18n/strings";
 import {
   adminAssign,
+  adminSetTarget,
   adminSwap,
   adminUnassign,
   setSignupsLock,
@@ -9,6 +10,7 @@ import {
 import { splitBySeverity, tripStatus, unmetRules } from "../lib/rules";
 import { optimize, type OptimizeResult } from "../lib/optimize";
 import { OrganizerAuth } from "../components/OrganizerAuth";
+import { RoomsEditor } from "../components/RoomsEditor";
 import type { TripData } from "../hooks/useTripData";
 
 const t = en.organizer;
@@ -30,6 +32,9 @@ export function OrganizerDashboard({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [opt, setOpt] = useState<OptimizeResult | null>(null);
+  const [targetDraft, setTargetDraft] = useState(
+    trip?.target_headcount != null ? String(trip.target_headcount) : "",
+  );
   const authed = passcode !== null;
 
   const nameOf = (id: string) =>
@@ -129,9 +134,44 @@ export function OrganizerDashboard({
         />
       ) : (
         <>
+          {error && <p className="banner banner--error">{error}</p>}
+
+          <RoomsEditor
+            tripId={tripId}
+            rooms={rooms}
+            assignments={assignments}
+            passcode={passcode}
+            onError={setError}
+          />
+
+          <div className="target-form">
+            <label className="field">
+              <span>{en.rooms.target}</span>
+              <input
+                type="number"
+                min={1}
+                value={targetDraft}
+                onChange={(e) => setTargetDraft(e.target.value)}
+              />
+            </label>
+            <button
+              disabled={busy}
+              onClick={() =>
+                act(() =>
+                  adminSetTarget(
+                    tripId,
+                    targetDraft.trim() === "" ? null : Number(targetDraft),
+                    passcode,
+                  ),
+                )
+              }
+            >
+              {en.rooms.saveTarget}
+            </button>
+          </div>
+
           <h2>{t.manage}</h2>
           <p className="muted">{t.manageIntro}</p>
-          {error && <p className="banner banner--error">{error}</p>}
           {participants.length === 0 ? (
             <p className="muted">{t.noParticipants}</p>
           ) : (
