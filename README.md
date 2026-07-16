@@ -33,6 +33,21 @@ violations. Built to run **100% on free tiers** (Netlify + Supabase) — see
 | `npm run typecheck` | Type-check only |
 | `npm run lint` | ESLint |
 | `npm test` | Unit tests (Vitest) |
+| `npm run test:integration` | Concurrency tests against a real Supabase project |
+
+### Concurrency tests
+`npm run test:integration` proves the DB-level invariants that unit tests can't
+(capacity race for the last spot, one-room-per-person, server-side sign-up lock —
+see `src/lib/concurrency.integration.test.ts`). They create a throwaway trip via
+RPCs and delete it afterwards, so they need a reachable Supabase project:
+
+```
+VITE_SUPABASE_URL=... VITE_SUPABASE_ANON_KEY=... npm run test:integration
+```
+
+Without those env vars they skip cleanly (so `npm test`/CI stays green). They talk
+to `*.supabase.co`, so in Claude Code web sessions that host must be on the
+network egress allowlist.
 
 ## Deploy (Netlify, free)
 Connect the repo to Netlify (build command `npm run build`, publish dir `dist`
