@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Room Sign-up">
+  <rect width="512" height="512" rx="112" fill="#2563eb"/>
+  <g fill="#ffffff">
+    <rect x="146" y="244" width="30" height="140" rx="12"/>
+    <rect x="146" y="318" width="236" height="30" rx="12"/>
+    <rect x="356" y="300" width="30" height="84" rx="12"/>
+    <rect x="176" y="286" width="100" height="36" rx="18"/>
+  </g>
+</svg>
