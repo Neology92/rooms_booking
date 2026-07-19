@@ -1,13 +1,12 @@
 import { useMemo, useState } from "react";
-import { en } from "../i18n/strings";
+import { useStrings } from "../i18n/I18nProvider";
 import { clearRule, setRule } from "../lib/actions";
 import { unmetRules } from "../lib/rules";
 import type { TripData } from "../hooks/useTripData";
 import type { Participant, RuleStrictness } from "../types/domain";
 
-const t = en.rules;
-
 export function RulesEditor({ me, data }: { me: Participant; data: TripData }) {
+  const t = useStrings().rules;
   const { participants, assignments, rules } = data;
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -135,6 +134,7 @@ function StrictnessPicker({
   disabled: boolean;
   onChange: (s: RuleStrictness) => void;
 }) {
+  const t = useStrings().rules;
   return (
     <div className="strictness">
       <span className="muted">{t.strictness}</span>

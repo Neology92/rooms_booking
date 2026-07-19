@@ -1,11 +1,9 @@
 import { useMemo, useState } from "react";
-import { en } from "../i18n/strings";
+import { useStrings } from "../i18n/I18nProvider";
 import { joinRoom, leaveRoom } from "../lib/actions";
 import { RulesEditor } from "../components/RulesEditor";
 import type { TripData } from "../hooks/useTripData";
 import type { Participant } from "../types/domain";
-
-const t = en.participant;
 
 export function ParticipantView({
   data,
@@ -16,6 +14,8 @@ export function ParticipantView({
   me: Participant;
   onReset: () => void;
 }) {
+  const s = useStrings();
+  const t = s.participant;
   const { trip, rooms, participants, assignments } = data;
   const meId = me.id;
   const [error, setError] = useState<string>("");
@@ -44,9 +44,9 @@ export function ParticipantView({
   return (
     <section>
       <div className="identity">
-        <span>{en.onboarding.signedInAs(me.name)}</span>
+        <span>{s.onboarding.signedInAs(me.name)}</span>
         <button className="linklike" onClick={onReset}>
-          {en.onboarding.notYou}
+          {s.onboarding.notYou}
         </button>
       </div>
 

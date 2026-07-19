@@ -1,8 +1,6 @@
 import { useState } from "react";
-import { en } from "../i18n/strings";
+import { useStrings } from "../i18n/I18nProvider";
 import { registerParticipant } from "../lib/actions";
-
-const t = en.onboarding;
 
 export function Onboarding({
   tripId,
@@ -11,6 +9,8 @@ export function Onboarding({
   tripId: string;
   onDone: (participantId: string) => void;
 }) {
+  const s = useStrings();
+  const t = s.onboarding;
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [gender, setGender] = useState("");

@@ -146,7 +146,14 @@ nieusuwalny). Wybór wyjazdu przez `?trip=<id>` w URL (shareable), landing = pic
 z listą wyjazdów i formularzem tworzenia. Migracja `0008` naprawia search_path
 funkcji pgcrypto (na Supabase `crypt`/`gen_salt` żyją w schemacie `extensions`).
 
+Faza 7 — **dopięcia**: usuwanie wyjazdu z UI (`admin_delete_trip`, `0009`, cascade,
+organizator-only), **testy współbieżności** (integracyjne, przeciw realnemu Postgresowi:
+limit/dublowanie/lock — `src/lib/concurrency.integration.test.ts`, `npm run test:integration`),
+**PWA** (instalowalna, service worker via `vite-plugin-pwa`, manifest, ikona) i **mobile-first**
+(cele dotykowe ≥44px, inputy 16px, safe-area). **Polski locale** — provider i18n
+(`src/i18n/I18nProvider.tsx`) + słownik `pl`, przełącznik EN/PL; domyślnie EN (`NEEDS §12`).
+
 Kolejne kroki (świadomie odłożone, zgodne z `NEEDS`/`DIRECTION`):
-- **Testy współbieżności** krytycznych ścieżek (limit/lock) — `CLAUDE §5`.
-- **Pełne konta użytkowników / per-user auth**, **wysyłka e-maili**, **polski locale**,
-  **requesty preferencji negocjowane między uczestnikami**, docelowy **solver** — `DIRECTION.md`.
+- **Pełne konta użytkowników / per-user auth**, **wysyłka e-maili** (NICE TO HAVE — odłożone
+  świadomie z uwagi na limity SMTP free, `NEEDS §11`), **requesty preferencji negocjowane
+  między uczestnikami**, docelowy **solver** — `DIRECTION.md`.

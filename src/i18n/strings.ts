@@ -1,5 +1,6 @@
-// All user-facing copy lives here so the UI ships in English (NEEDS §12) and a
-// future locale (e.g. Polish — see DIRECTION.md) is a drop-in second dictionary.
+// All user-facing copy lives here. English is the default (NEEDS §12); Polish is
+// an opt-in second dictionary (DIRECTION.md). `pl` is typed as `Strings`, so the
+// type-checker fails the build if a translation is missing or the shape drifts.
 export const en = {
   app: {
     title: "Room Sign-up",
@@ -81,6 +82,10 @@ export const en = {
     swapWith: (aName: string, aRoom: string, bName: string, bRoom: string) =>
       `Swap ${aName} (${aRoom}) ↔ ${bName} (${bRoom})`,
     apply: "Apply",
+    dangerZone: "Danger zone",
+    deleteTrip: "Delete trip",
+    deleteConfirm: (name: string) =>
+      `Delete "${name}" and all its rooms, participants and assignments? This cannot be undone.`,
   },
   organizerAuth: {
     claimHeading: "Claim this trip",
@@ -138,6 +143,160 @@ export const en = {
     target: "Target headcount",
     saveTarget: "Save target",
   },
-} as const;
+};
 
 export type Strings = typeof en;
+export type Lang = "en" | "pl";
+
+export const pl: Strings = {
+  app: {
+    title: "Zapisy na pokoje",
+    loading: "Ładowanie…",
+    missingConfig:
+      "Supabase nie jest skonfigurowany. Skopiuj .env.example do .env i ustaw VITE_SUPABASE_URL oraz VITE_SUPABASE_ANON_KEY.",
+  },
+  tabs: {
+    participant: "Zapisy",
+    organizer: "Organizator",
+  },
+  onboarding: {
+    heading: "Dołącz do wyjazdu",
+    intro: "Podaj swoje dane, aby zapisać się do pokoju.",
+    name: "Imię",
+    email: "E-mail",
+    emailHint: "Używany przez organizatora do wysyłki kodów i szczegółów pokojów.",
+    gender: "Płeć",
+    genderUnset: "Wolę nie podawać",
+    male: "Mężczyzna",
+    female: "Kobieta",
+    other: "Inna",
+    submit: "Dalej",
+    signedInAs: (name: string) => `Zalogowano jako ${name}`,
+    notYou: "To nie Ty?",
+  },
+  participant: {
+    whoAreYou: "Kim jesteś?",
+    pickName: "Wybierz swoje imię",
+    rooms: "Pokoje",
+    join: "Dołącz",
+    leave: "Wypisz się",
+    full: "Pełny",
+    youAreHere: "Tu jesteś",
+    spotsLeft: (n: number) => `${n} ${n === 1 ? "wolne miejsce" : "wolnych miejsc"}`,
+    locked: "Zapisy zostały zablokowane przez organizatora.",
+  },
+  rules: {
+    heading: "Moje preferencje współlokatorów",
+    intro: "Opcjonalne. Pomagają organizatorowi ułożyć pokoje.",
+    sameGender: "Tylko pokój z osobami tej samej płci",
+    sameGenderNoGender: "Ustaw powyżej swoją płeć, aby użyć tej preferencji.",
+    preferredPerson: "Chcę być w pokoju z",
+    preferredNone: "— brak preferencji —",
+    strictness: "Jak ważne?",
+    preference: "Preferencja",
+    mustHave: "Wymagane (must have)",
+    mustHaveWarning:
+      "Reguły wymagane mogą zostawić Cię bez przydziału, jeśli nie da się ich spełnić. Używaj oszczędnie — zwykle wystarczy preferencja.",
+    remove: "Usuń",
+    notMet: "Niespełnione w Twoim obecnym pokoju.",
+  },
+  organizer: {
+    title: "Panel organizatora",
+    signedUp: "Zapisani",
+    target: "Cel",
+    lockSignups: "Zablokuj zapisy",
+    unlockSignups: "Odblokuj zapisy",
+    locked: "ZABLOKOWANE",
+    open: "OTWARTE",
+    occupancy: "Obłożenie",
+    issues: "Problemy",
+    allGood: "Wszystkie reguły spełnione",
+    mustHaveViolation: "MUST-HAVE niespełnione",
+    preferenceUnmet: "Preferencja niespełniona",
+    manage: "Przypisania",
+    manageIntro: "Ręcznie przypisuj uczestników do pokojów. Działa nawet przy zablokowanych zapisach.",
+    unassigned: "— Bez pokoju —",
+    roomFullOption: (name: string) => `${name} (pełny)`,
+    noParticipants: "Brak uczestników.",
+    signOut: "Wyloguj",
+    signedIn: "Tryb organizatora",
+    optimize: "Optymalizacja",
+    optimizeIntro: "Zaproponuj zamiany pokojów — najpierw naprawia MUST-HAVE, potem preferencje.",
+    optimizeRun: "Zaproponuj zamiany",
+    optimizeNone: "Brak poprawiających zamian. Obecny układ jest najlepszy z możliwych zamian.",
+    optimizeSummary: (crit: number, pref: number) =>
+      `Naprawi ${crit} MUST-HAVE i ${pref} ${pref === 1 ? "problem" : "problemów"} z preferencjami.`,
+    swapWith: (aName: string, aRoom: string, bName: string, bRoom: string) =>
+      `Zamień ${aName} (${aRoom}) ↔ ${bName} (${bRoom})`,
+    apply: "Zastosuj",
+    dangerZone: "Strefa niebezpieczna",
+    deleteTrip: "Usuń wyjazd",
+    deleteConfirm: (name: string) =>
+      `Usunąć „${name}" wraz ze wszystkimi pokojami, uczestnikami i przypisaniami? Tego nie można cofnąć.`,
+  },
+  organizerAuth: {
+    claimHeading: "Przejmij ten wyjazd",
+    claimIntro:
+      "Nie ustawiono jeszcze kodu organizatora. Wybierz go, aby zostać organizatorem tego wyjazdu. Trzymaj go bezpiecznie — każdy, kto go zna, może zarządzać wyjazdem.",
+    loginHeading: "Logowanie organizatora",
+    loginIntro: "Podaj kod organizatora, aby zarządzać pokojami i blokadą zapisów.",
+    passcode: "Kod organizatora",
+    claimSubmit: "Przejmij wyjazd",
+    loginSubmit: "Odblokuj panel",
+    viewOnly: "Oglądasz panel tylko do odczytu. Zaloguj się jako organizator, aby wprowadzać zmiany.",
+  },
+  errors: {
+    ROOM_FULL: "Ten pokój jest już pełny.",
+    SIGNUPS_LOCKED: "Zapisy są zablokowane.",
+    ROOM_NOT_FOUND: "Nie znaleziono pokoju.",
+    PARTICIPANT_NOT_IN_TRIP: "Nie należysz do tego wyjazdu.",
+    NAME_REQUIRED: "Podaj imię.",
+    TRIP_NOT_FOUND: "Nie znaleziono wyjazdu.",
+    NOT_ORGANIZER: "Błędny kod organizatora.",
+    PASSCODE_TOO_SHORT: "Kod musi mieć co najmniej 4 znaki.",
+    PARTICIPANT_NOT_ASSIGNED: "Ta osoba nie jest w żadnym pokoju.",
+    TARGET_REQUIRED: "Wybierz osobę dla tej preferencji.",
+    TARGET_IS_SELF: "Nie możesz wybrać samego siebie.",
+    CAPACITY_INVALID: "Pojemność musi wynosić co najmniej 1.",
+    CAPACITY_BELOW_OCCUPANCY: "Pojemność nie może być mniejsza niż liczba osób już w pokoju.",
+    ROOM_NOT_EMPTY: "Opróżnij pokój przed usunięciem.",
+    UNKNOWN: "Coś poszło nie tak. Spróbuj ponownie.",
+  },
+  tripPicker: {
+    title: "Zapisy na pokoje",
+    pickHeading: "Wybierz wyjazd",
+    empty: "Brak wyjazdów. Utwórz nowy poniżej.",
+    open: "Otwórz",
+    organizerTag: "ma organizatora",
+    createHeading: "Utwórz wyjazd",
+    createIntro: "Zostaniesz jego organizatorem z wybranym kodem.",
+    name: "Nazwa wyjazdu",
+    target: "Docelowa liczba osób (opcjonalnie)",
+    passcode: "Kod organizatora",
+    passcodeHint: "Co najmniej 4 znaki. Będzie potrzebny do zarządzania wyjazdem.",
+    create: "Utwórz wyjazd",
+    back: "← Wyjazdy",
+  },
+  rooms: {
+    heading: "Pokoje",
+    intro: "Dodaj pokoje, do których można się zapisywać — każdy z pojemnością.",
+    name: "Nazwa pokoju",
+    capacity: "Pojemność",
+    info: "Informacja (opcjonalnie)",
+    add: "Dodaj pokój",
+    save: "Zapisz",
+    remove: "Usuń",
+    occupied: (n: number) => `${n} w środku`,
+    target: "Docelowa liczba osób",
+    saveTarget: "Zapisz cel",
+  },
+};
+
+export const dictionaries: Record<Lang, Strings> = { en, pl };
+
+// Error strings are resolved in the (non-React) actions layer, so it can't use a
+// hook. The provider points this at the active dictionary on language change.
+export let activeErrors: Strings["errors"] = en.errors;
+export function setErrorLocale(errors: Strings["errors"]) {
+  activeErrors = errors;
+}

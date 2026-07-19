@@ -1,8 +1,6 @@
 import { useState } from "react";
-import { en } from "../i18n/strings";
+import { useStrings } from "../i18n/I18nProvider";
 import { setOrganizerPasscode, verifyOrganizer } from "../lib/actions";
-
-const t = en.organizerAuth;
 
 // Shown in the Organizer tab when the visitor hasn't unlocked controls.
 // - Unclaimed trip  -> set a passcode (claim).
@@ -19,6 +17,8 @@ export function OrganizerAuth({
   onAuthed: (passcode: string) => void;
   onClaimed: () => void;
 }) {
+  const s = useStrings();
+  const t = s.organizerAuth;
   const [value, setValue] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -31,7 +31,7 @@ export function OrganizerAuth({
       const res = await verifyOrganizer(tripId, value);
       setBusy(false);
       if (res.ok && res.valid) onAuthed(value);
-      else setError(res.error ?? en.errors.NOT_ORGANIZER);
+      else setError(res.error ?? s.errors.NOT_ORGANIZER);
     } else {
       const res = await setOrganizerPasscode(tripId, "", value);
       setBusy(false);

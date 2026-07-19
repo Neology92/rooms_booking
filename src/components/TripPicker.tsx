@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
-import { en } from "../i18n/strings";
+import { useStrings } from "../i18n/I18nProvider";
 import { supabase } from "../lib/supabase";
 import { createTrip } from "../lib/actions";
-
-const t = en.tripPicker;
 
 interface TripRow {
   id: string;
@@ -20,6 +18,7 @@ export function TripPicker({
   onSelect: (id: string) => void;
   onCreated: (id: string, passcode: string) => void;
 }) {
+  const t = useStrings().tripPicker;
   const [trips, setTrips] = useState<TripRow[]>([]);
   const [name, setName] = useState("");
   const [target, setTarget] = useState("");

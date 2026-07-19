@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
-import { en } from "../i18n/strings";
 import {
   adminAssign,
+  adminDeleteTrip,
   adminSetTarget,
   adminSwap,
   adminUnassign,
@@ -9,11 +9,10 @@ import {
 } from "../lib/actions";
 import { splitBySeverity, tripStatus, unmetRules } from "../lib/rules";
 import { optimize, type OptimizeResult } from "../lib/optimize";
+import { useStrings } from "../i18n/I18nProvider";
 import { OrganizerAuth } from "../components/OrganizerAuth";
 import { RoomsEditor } from "../components/RoomsEditor";
 import type { TripData } from "../hooks/useTripData";
-
-const t = en.organizer;
 
 export function OrganizerDashboard({
   data,
@@ -21,13 +20,17 @@ export function OrganizerDashboard({
   onAuthed,
   onSignOut,
   onReload,
+  onDeleted,
 }: {
   data: TripData;
   passcode: string | null;
   onAuthed: (passcode: string) => void;
   onSignOut: () => void;
   onReload: () => void;
+  onDeleted: () => void;
 }) {
+  const s = useStrings();
+  const t = s.organizer;
   const { trip, rooms, participants, assignments, rules } = data;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -60,7 +63,7 @@ export function OrganizerDashboard({
     setBusy(false);
     if (!res.ok) {
       setError(res.error ?? "");
-      if (res.error === en.errors.NOT_ORGANIZER) onSignOut();
+      if (res.error === s.errors.NOT_ORGANIZER) onSignOut();
     }
   }
 
@@ -146,7 +149,7 @@ export function OrganizerDashboard({
 
           <div className="target-form">
             <label className="field">
-              <span>{en.rooms.target}</span>
+              <span>{s.rooms.target}</span>
               <input
                 type="number"
                 min={1}
@@ -166,7 +169,7 @@ export function OrganizerDashboard({
                 )
               }
             >
-              {en.rooms.saveTarget}
+              {s.rooms.saveTarget}
             </button>
           </div>
 
@@ -264,6 +267,23 @@ export function OrganizerDashboard({
               </ul>
             </>
           )}
+          <div className="danger-zone">
+            <h2>{t.dangerZone}</h2>
+            <button
+              className="danger"
+              disabled={busy}
+              onClick={() => {
+                if (!window.confirm(t.deleteConfirm(trip.name))) return;
+                void act(async () => {
+                  const res = await adminDeleteTrip(tripId, passcode);
+                  if (res.ok) onDeleted();
+                  return res;
+                });
+              }}
+            >
+              {t.deleteTrip}
+            </button>
+          </div>
         </>
       )}
 

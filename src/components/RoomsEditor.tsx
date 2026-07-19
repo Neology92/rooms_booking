@@ -1,13 +1,11 @@
 import { useState } from "react";
-import { en } from "../i18n/strings";
+import { useStrings } from "../i18n/I18nProvider";
 import {
   adminCreateRoom,
   adminDeleteRoom,
   adminUpdateRoom,
 } from "../lib/actions";
 import type { Assignment, Room } from "../types/domain";
-
-const t = en.rooms;
 
 type Result = { ok: boolean; error?: string };
 
@@ -24,6 +22,7 @@ export function RoomsEditor({
   passcode: string;
   onError: (msg: string) => void;
 }) {
+  const t = useStrings().rooms;
   const [name, setName] = useState("");
   const [capacity, setCapacity] = useState("2");
   const [info, setInfo] = useState("");
@@ -116,6 +115,7 @@ function RoomRow({
   passcode: string;
   run: (fn: () => Promise<Result>) => Promise<Result>;
 }) {
+  const t = useStrings().rooms;
   const [name, setName] = useState(room.name);
   const [capacity, setCapacity] = useState(String(room.capacity));
   const [info, setInfo] = useState(room.info ?? "");

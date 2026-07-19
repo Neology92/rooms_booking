@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { en } from "./i18n/strings";
+import { useStrings, useLang } from "./i18n/I18nProvider";
 import { isConfigured } from "./lib/supabase";
 import { useTripData } from "./hooks/useTripData";
 import { useTripId } from "./hooks/useTripId";
@@ -12,7 +12,28 @@ import { OrganizerDashboard } from "./pages/OrganizerDashboard";
 
 type Tab = "participant" | "organizer";
 
+function LangSwitch() {
+  const { lang, setLang } = useLang();
+  return (
+    <div className="lang" role="group" aria-label="Language">
+      <button
+        className={lang === "en" ? "active" : ""}
+        onClick={() => setLang("en")}
+      >
+        EN
+      </button>
+      <button
+        className={lang === "pl" ? "active" : ""}
+        onClick={() => setLang("pl")}
+      >
+        PL
+      </button>
+    </div>
+  );
+}
+
 export default function App() {
+  const s = useStrings();
   const [tab, setTab] = useState<Tab>("participant");
   const { tripId, select } = useTripId();
   const data = useTripData(tripId);
@@ -50,10 +71,10 @@ export default function App() {
 
   function body() {
     if (!isConfigured) {
-      return <p className="banner banner--error">{en.app.missingConfig}</p>;
+      return <p className="banner banner--error">{s.app.missingConfig}</p>;
     }
     if (!tripId) return picker;
-    if (data.loading) return <p>{en.app.loading}</p>;
+    if (data.loading) return <p>{s.app.loading}</p>;
     if (!data.trip) return picker; // stale/unknown ?trip= → back to the list
     return tab === "participant" ? (
       renderParticipant()
@@ -64,6 +85,11 @@ export default function App() {
         onAuthed={organizer.save}
         onSignOut={organizer.clear}
         onReload={() => void data.reload()}
+        onDeleted={() => {
+          organizer.clear();
+          setTab("participant");
+          select(undefined);
+        }}
       />
     );
   }
@@ -73,26 +99,29 @@ export default function App() {
   return (
     <main className="app">
       <header className="app__header">
-        <h1>{data.trip?.name ?? en.tripPicker.title}</h1>
-        {showTabs && (
-          <nav className="tabs">
-            <button
-              className={tab === "participant" ? "active" : ""}
-              onClick={() => setTab("participant")}
-            >
-              {en.tabs.participant}
-            </button>
-            <button
-              className={tab === "organizer" ? "active" : ""}
-              onClick={() => setTab("organizer")}
-            >
-              {en.tabs.organizer}
-            </button>
-            <button className="linklike" onClick={() => select(undefined)}>
-              {en.tripPicker.back}
-            </button>
-          </nav>
-        )}
+        <h1>{data.trip?.name ?? s.tripPicker.title}</h1>
+        <div className="header__controls">
+          {showTabs && (
+            <nav className="tabs">
+              <button
+                className={tab === "participant" ? "active" : ""}
+                onClick={() => setTab("participant")}
+              >
+                {s.tabs.participant}
+              </button>
+              <button
+                className={tab === "organizer" ? "active" : ""}
+                onClick={() => setTab("organizer")}
+              >
+                {s.tabs.organizer}
+              </button>
+              <button className="linklike" onClick={() => select(undefined)}>
+                {s.tripPicker.back}
+              </button>
+            </nav>
+          )}
+          <LangSwitch />
+        </div>
       </header>
 
       {body()}

@@ -59,8 +59,19 @@ input, select {
   max-width: 100%;
 }
 
+.header__controls { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
 .tabs { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
 .tabs button.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+.lang { display: inline-flex; }
+.lang button { min-height: 36px; padding: 0.25rem 0.6rem; font-size: 0.85rem; border-radius: 0; }
+.lang button:first-child { border-radius: 8px 0 0 8px; }
+.lang button:last-child { border-radius: 0 8px 8px 0; border-left: none; }
+.lang button.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+.danger-zone { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--line); }
+.danger-zone button.danger,
+button.danger { background: #fff; color: #991b1b; border-color: #fca5a5; }
 
 /* Link-style buttons opt out of the box treatment. */
 .linklike {

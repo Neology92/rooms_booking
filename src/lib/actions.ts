@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-import { en } from "../i18n/strings";
+import { activeErrors } from "../i18n/strings";
 import type { RuleStrictness, RuleType } from "../types/domain";
 
 export interface ActionResult {
@@ -9,18 +9,18 @@ export interface ActionResult {
 
 // Maps a Postgres error raised by our RPCs to a friendly, localized message.
 function toMessage(message: string | undefined): string {
-  if (!message) return en.errors.UNKNOWN;
-  for (const key of Object.keys(en.errors) as (keyof typeof en.errors)[]) {
-    if (message.includes(key)) return en.errors[key];
+  if (!message) return activeErrors.UNKNOWN;
+  for (const key of Object.keys(activeErrors) as (keyof typeof activeErrors)[]) {
+    if (message.includes(key)) return activeErrors[key];
   }
-  return en.errors.UNKNOWN;
+  return activeErrors.UNKNOWN;
 }
 
 export async function joinRoom(
   participantId: string,
   roomId: string,
 ): Promise<ActionResult> {
-  if (!supabase) return { ok: false, error: en.errors.UNKNOWN };
+  if (!supabase) return { ok: false, error: activeErrors.UNKNOWN };
   const { error } = await supabase.rpc("join_room", {
     p_participant_id: participantId,
     p_room_id: roomId,
@@ -29,7 +29,7 @@ export async function joinRoom(
 }
 
 export async function leaveRoom(participantId: string): Promise<ActionResult> {
-  if (!supabase) return { ok: false, error: en.errors.UNKNOWN };
+  if (!supabase) return { ok: false, error: activeErrors.UNKNOWN };
   const { error } = await supabase.rpc("leave_room", {
     p_participant_id: participantId,
   });
@@ -41,7 +41,7 @@ export async function setSignupsLock(
   locked: boolean,
   passcode: string,
 ): Promise<ActionResult> {
-  if (!supabase) return { ok: false, error: en.errors.UNKNOWN };
+  if (!supabase) return { ok: false, error: activeErrors.UNKNOWN };
   const { error } = await supabase.rpc("set_signups_lock", {
     p_trip_id: tripId,
     p_locked: locked,
@@ -58,7 +58,7 @@ export async function setOrganizerPasscode(
   current: string,
   next: string,
 ): Promise<ActionResult> {
-  if (!supabase) return { ok: false, error: en.errors.UNKNOWN };
+  if (!supabase) return { ok: false, error: activeErrors.UNKNOWN };
   const { error } = await supabase.rpc("set_organizer_passcode", {
     p_trip_id: tripId,
     p_current_passcode: current,
@@ -75,7 +75,7 @@ export async function verifyOrganizer(
   tripId: string,
   passcode: string,
 ): Promise<VerifyResult> {
-  if (!supabase) return { ok: false, error: en.errors.UNKNOWN };
+  if (!supabase) return { ok: false, error: activeErrors.UNKNOWN };
   const { data, error } = await supabase.rpc("verify_organizer", {
     p_trip_id: tripId,
     p_passcode: passcode,
@@ -94,7 +94,7 @@ export async function registerParticipant(
   email: string,
   gender: string,
 ): Promise<RegisterResult> {
-  if (!supabase) return { ok: false, error: en.errors.UNKNOWN };
+  if (!supabase) return { ok: false, error: activeErrors.UNKNOWN };
   const { data, error } = await supabase.rpc("register_participant", {
     p_trip_id: tripId,
     p_name: name,
@@ -111,7 +111,7 @@ export async function setRule(
   strictness: RuleStrictness,
   targetParticipantId?: string,
 ): Promise<ActionResult> {
-  if (!supabase) return { ok: false, error: en.errors.UNKNOWN };
+  if (!supabase) return { ok: false, error: activeErrors.UNKNOWN };
   const { error } = await supabase.rpc("set_rule", {
     p_participant_id: participantId,
     p_type: type,
@@ -125,7 +125,7 @@ export async function clearRule(
   participantId: string,
   type: RuleType,
 ): Promise<ActionResult> {
-  if (!supabase) return { ok: false, error: en.errors.UNKNOWN };
+  if (!supabase) return { ok: false, error: activeErrors.UNKNOWN };
   const { error } = await supabase.rpc("clear_rule", {
     p_participant_id: participantId,
     p_type: type,
@@ -140,7 +140,7 @@ export async function adminAssign(
   roomId: string,
   passcode: string,
 ): Promise<ActionResult> {
-  if (!supabase) return { ok: false, error: en.errors.UNKNOWN };
+  if (!supabase) return { ok: false, error: activeErrors.UNKNOWN };
   const { error } = await supabase.rpc("admin_assign", {
     p_participant_id: participantId,
     p_room_id: roomId,
@@ -153,7 +153,7 @@ export async function adminUnassign(
   participantId: string,
   passcode: string,
 ): Promise<ActionResult> {
-  if (!supabase) return { ok: false, error: en.errors.UNKNOWN };
+  if (!supabase) return { ok: false, error: activeErrors.UNKNOWN };
   const { error } = await supabase.rpc("admin_unassign", {
     p_participant_id: participantId,
     p_passcode: passcode,
@@ -167,7 +167,7 @@ export async function createTrip(
   targetHeadcount: number | null,
   passcode: string,
 ): Promise<RegisterResult> {
-  if (!supabase) return { ok: false, error: en.errors.UNKNOWN };
+  if (!supabase) return { ok: false, error: activeErrors.UNKNOWN };
   const { data, error } = await supabase.rpc("create_trip", {
     p_name: name,
     p_target_headcount: targetHeadcount,
@@ -184,7 +184,7 @@ export async function adminCreateRoom(
   info: string,
   passcode: string,
 ): Promise<ActionResult> {
-  if (!supabase) return { ok: false, error: en.errors.UNKNOWN };
+  if (!supabase) return { ok: false, error: activeErrors.UNKNOWN };
   const { error } = await supabase.rpc("admin_create_room", {
     p_trip_id: tripId,
     p_name: name,
@@ -202,7 +202,7 @@ export async function adminUpdateRoom(
   info: string,
   passcode: string,
 ): Promise<ActionResult> {
-  if (!supabase) return { ok: false, error: en.errors.UNKNOWN };
+  if (!supabase) return { ok: false, error: activeErrors.UNKNOWN };
   const { error } = await supabase.rpc("admin_update_room", {
     p_room_id: roomId,
     p_name: name,
@@ -217,7 +217,7 @@ export async function adminDeleteRoom(
   roomId: string,
   passcode: string,
 ): Promise<ActionResult> {
-  if (!supabase) return { ok: false, error: en.errors.UNKNOWN };
+  if (!supabase) return { ok: false, error: activeErrors.UNKNOWN };
   const { error } = await supabase.rpc("admin_delete_room", {
     p_room_id: roomId,
     p_passcode: passcode,
@@ -230,10 +230,22 @@ export async function adminSetTarget(
   target: number | null,
   passcode: string,
 ): Promise<ActionResult> {
-  if (!supabase) return { ok: false, error: en.errors.UNKNOWN };
+  if (!supabase) return { ok: false, error: activeErrors.UNKNOWN };
   const { error } = await supabase.rpc("admin_set_target", {
     p_trip_id: tripId,
     p_target: target,
+    p_passcode: passcode,
+  });
+  return error ? { ok: false, error: toMessage(error.message) } : { ok: true };
+}
+
+export async function adminDeleteTrip(
+  tripId: string,
+  passcode: string,
+): Promise<ActionResult> {
+  if (!supabase) return { ok: false, error: activeErrors.UNKNOWN };
+  const { error } = await supabase.rpc("admin_delete_trip", {
+    p_trip_id: tripId,
     p_passcode: passcode,
   });
   return error ? { ok: false, error: toMessage(error.message) } : { ok: true };
@@ -245,7 +257,7 @@ export async function adminSwap(
   bId: string,
   passcode: string,
 ): Promise<ActionResult> {
-  if (!supabase) return { ok: false, error: en.errors.UNKNOWN };
+  if (!supabase) return { ok: false, error: activeErrors.UNKNOWN };
   const { error } = await supabase.rpc("admin_swap", {
     p_a: aId,
     p_b: bId,
