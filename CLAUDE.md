@@ -153,7 +153,14 @@ limit/dublowanie/lock — `src/lib/concurrency.integration.test.ts`, `npm run te
 (cele dotykowe ≥44px, inputy 16px, safe-area). **Polski locale** — provider i18n
 (`src/i18n/I18nProvider.tsx`) + słownik `pl`, przełącznik EN/PL; domyślnie EN (`NEEDS §12`).
 
+Faza 8 — **requesty negocjowane** (`DIRECTION.md`, `0010`): `pairing_requests`
+(send/accept/withdraw/end, trust-based; partial-unique index na nieuporządkowanej
+parze + advisory lock w `send` → jedna aktywna para na dwójkę). Zaakceptowana para =
+dwie **syntetyczne miękkie** preferencje wpuszczane przez `effectiveRules` w
+sygnalizację i optymalizator — `unmetRules`/`optimize` bez zmian, `rules`/`assignments`
+nietknięte (§10 bezpieczne). Projekt i review przez multi-agent workflow (panel
+projektowy + adversarialna weryfikacja diffu).
+
 Kolejne kroki (świadomie odłożone, zgodne z `NEEDS`/`DIRECTION`):
 - **Pełne konta użytkowników / per-user auth**, **wysyłka e-maili** (NICE TO HAVE — odłożone
-  świadomie z uwagi na limity SMTP free, `NEEDS §11`), **requesty preferencji negocjowane
-  między uczestnikami**, docelowy **solver** — `DIRECTION.md`.
+  świadomie z uwagi na limity SMTP free, `NEEDS §11`), docelowy **solver** — `DIRECTION.md`.
