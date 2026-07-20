@@ -176,6 +176,7 @@ button.danger { background: #fff; color: #991b1b; border-color: #fca5a5; }
 
 .rules-editor { margin-top: 1.5rem; border-top: 1px solid var(--line); padding-top: 1rem; }
 .rule-block { margin: 0.75rem 0; padding: 0.75rem; background: #fff; border: 1px solid var(--line); border-radius: 8px; }
+.pairing__actions { display: inline-flex; gap: 0.4rem; }
 .checkline { display: flex; gap: 0.5rem; align-items: center; }
 .strictness { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; margin-top: 0.5rem; }
 .radio { display: inline-flex; gap: 0.3rem; align-items: center; }

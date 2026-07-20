@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useStrings } from "../i18n/I18nProvider";
 import { joinRoom, leaveRoom } from "../lib/actions";
 import { RulesEditor } from "../components/RulesEditor";
+import { PairingsPanel } from "../components/PairingsPanel";
 import type { TripData } from "../hooks/useTripData";
 import type { Participant } from "../types/domain";
 
@@ -99,6 +100,7 @@ export function ParticipantView({
       </ul>
 
       <RulesEditor me={me} data={data} />
+      <PairingsPanel me={me} data={data} />
     </section>
   );
 }

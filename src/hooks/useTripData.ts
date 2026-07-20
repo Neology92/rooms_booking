@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import type {
   Assignment,
+  PairingRequest,
   Participant,
   Room,
   Rule,
@@ -14,6 +15,7 @@ export interface TripData {
   participants: Participant[];
   assignments: Assignment[];
   rules: Rule[];
+  pairings: PairingRequest[];
 }
 
 const empty: TripData = {
@@ -22,6 +24,7 @@ const empty: TripData = {
   participants: [],
   assignments: [],
   rules: [],
+  pairings: [],
 };
 
 // Loads one trip's data (by id) and keeps it live via Supabase Realtime
@@ -49,11 +52,12 @@ export function useTripData(tripId: string | undefined) {
       setLoading(false);
       return;
     }
-    const [rooms, participants, assignments, rules] = await Promise.all([
+    const [rooms, participants, assignments, rules, pairings] = await Promise.all([
       supabase.from("rooms").select("*").eq("trip_id", trip.id).order("name"),
       supabase.from("participants").select("*").eq("trip_id", trip.id).order("name"),
       supabase.from("assignments").select("*").eq("trip_id", trip.id),
       supabase.from("rules").select("*"),
+      supabase.from("pairing_requests").select("*").eq("trip_id", trip.id),
     ]);
     setData({
       trip,
@@ -61,6 +65,7 @@ export function useTripData(tripId: string | undefined) {
       participants: participants.data ?? [],
       assignments: assignments.data ?? [],
       rules: rules.data ?? [],
+      pairings: pairings.data ?? [],
     });
     setLoading(false);
   }, [tripId]);
@@ -76,6 +81,7 @@ export function useTripData(tripId: string | undefined) {
       .on("postgres_changes", { event: "*", schema: "public", table: "trips" }, () => void load())
       .on("postgres_changes", { event: "*", schema: "public", table: "rules" }, () => void load())
       .on("postgres_changes", { event: "*", schema: "public", table: "participants" }, () => void load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "pairing_requests" }, () => void load())
       .subscribe();
     return () => {
       void client.removeChannel(channel);

@@ -133,6 +133,58 @@ export async function clearRule(
   return error ? { ok: false, error: toMessage(error.message) } : { ok: true };
 }
 
+// ---- negotiated roommate requests (DIRECTION.md) ---------------------------
+// Trust-based: the client passes its own participant_id (same model as join_room).
+export async function sendPairingRequest(
+  fromId: string,
+  toId: string,
+): Promise<ActionResult> {
+  if (!supabase) return { ok: false, error: activeErrors.UNKNOWN };
+  const { error } = await supabase.rpc("send_pairing_request", {
+    p_from: fromId,
+    p_to: toId,
+  });
+  return error ? { ok: false, error: toMessage(error.message) } : { ok: true };
+}
+
+export async function respondPairingRequest(
+  meId: string,
+  requestId: string,
+  accept: boolean,
+): Promise<ActionResult> {
+  if (!supabase) return { ok: false, error: activeErrors.UNKNOWN };
+  const { error } = await supabase.rpc("respond_pairing_request", {
+    p_participant_id: meId,
+    p_request_id: requestId,
+    p_accept: accept,
+  });
+  return error ? { ok: false, error: toMessage(error.message) } : { ok: true };
+}
+
+export async function withdrawPairingRequest(
+  meId: string,
+  requestId: string,
+): Promise<ActionResult> {
+  if (!supabase) return { ok: false, error: activeErrors.UNKNOWN };
+  const { error } = await supabase.rpc("withdraw_pairing_request", {
+    p_participant_id: meId,
+    p_request_id: requestId,
+  });
+  return error ? { ok: false, error: toMessage(error.message) } : { ok: true };
+}
+
+export async function endPairing(
+  meId: string,
+  requestId: string,
+): Promise<ActionResult> {
+  if (!supabase) return { ok: false, error: activeErrors.UNKNOWN };
+  const { error } = await supabase.rpc("end_pairing", {
+    p_participant_id: meId,
+    p_request_id: requestId,
+  });
+  return error ? { ok: false, error: toMessage(error.message) } : { ok: true };
+}
+
 // Organizer overrides (Phase 3): place/remove a participant, bypassing the lock
 // but still enforcing capacity + one-room-per-person server-side.
 export async function adminAssign(

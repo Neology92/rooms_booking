@@ -7,7 +7,7 @@ import {
   adminUnassign,
   setSignupsLock,
 } from "../lib/actions";
-import { splitBySeverity, tripStatus, unmetRules } from "../lib/rules";
+import { effectiveRules, splitBySeverity, tripStatus, unmetRules } from "../lib/rules";
 import { optimize, type OptimizeResult } from "../lib/optimize";
 import { useStrings } from "../i18n/I18nProvider";
 import { OrganizerAuth } from "../components/OrganizerAuth";
@@ -31,7 +31,14 @@ export function OrganizerDashboard({
 }) {
   const s = useStrings();
   const t = s.organizer;
-  const { trip, rooms, participants, assignments, rules } = data;
+  const { trip, rooms, participants, assignments, rules, pairings } = data;
+
+  // Accepted negotiated pairings fold in as synthetic two-way soft preferences,
+  // so signalling + the optimizer honor them without touching the rules engine.
+  const eff = useMemo(
+    () => effectiveRules(rules, pairings, participants),
+    [rules, pairings, participants],
+  );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [opt, setOpt] = useState<OptimizeResult | null>(null);
@@ -68,8 +75,8 @@ export function OrganizerDashboard({
   }
 
   const unmet = useMemo(
-    () => unmetRules(rules, assignments, participants),
-    [rules, assignments, participants],
+    () => unmetRules(eff, assignments, participants),
+    [eff, assignments, participants],
   );
   const { critical, preferences } = splitBySeverity(unmet);
   const signedUp = assignments.length;
@@ -224,7 +231,7 @@ export function OrganizerDashboard({
           <p className="muted">{t.optimizeIntro}</p>
           <button
             disabled={busy}
-            onClick={() => setOpt(optimize(participants, assignments, rules))}
+            onClick={() => setOpt(optimize(participants, assignments, eff))}
           >
             {t.optimizeRun}
           </button>

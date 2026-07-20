@@ -41,3 +41,20 @@ export interface Rule {
   strictness: RuleStrictness;
   target_participant_id: string | null;
 }
+
+export type PairingStatus =
+  | "pending"
+  | "accepted"
+  | "declined"
+  | "withdrawn"
+  | "ended";
+
+// Negotiated roommate request (DIRECTION.md). An accepted pairing is a mutual
+// soft preference, folded into synthetic rules at evaluation time (rules.ts).
+export interface PairingRequest {
+  id: string;
+  trip_id: string;
+  from_participant_id: string;
+  to_participant_id: string;
+  status: PairingStatus;
+}
