@@ -2,13 +2,13 @@ import { useMemo, useState } from "react";
 import {
   adminAssign,
   adminDeleteTrip,
+  adminSetAssignments,
   adminSetTarget,
-  adminSwap,
   adminUnassign,
   setSignupsLock,
 } from "../lib/actions";
 import { effectiveRules, splitBySeverity, tripStatus, unmetRules } from "../lib/rules";
-import { optimize, type OptimizeResult } from "../lib/optimize";
+import { solve, type SolveResult } from "../lib/solve";
 import { useStrings } from "../i18n/I18nProvider";
 import { OrganizerAuth } from "../components/OrganizerAuth";
 import { RoomsEditor } from "../components/RoomsEditor";
@@ -41,7 +41,7 @@ export function OrganizerDashboard({
   );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [opt, setOpt] = useState<OptimizeResult | null>(null);
+  const [opt, setOpt] = useState<SolveResult | null>(null);
   const [targetDraft, setTargetDraft] = useState(
     trip?.target_headcount != null ? String(trip.target_headcount) : "",
   );
@@ -49,6 +49,9 @@ export function OrganizerDashboard({
 
   const nameOf = (id: string) =>
     participants.find((p) => p.id === id)?.name ?? "?";
+
+  const roomNameById = (roomId: string) =>
+    rooms.find((r) => r.id === roomId)?.name ?? "?";
 
   const roomNameOf = (participantId: string) => {
     const roomId = assignments.find((x) => x.participant_id === participantId)?.room_id;
@@ -231,14 +234,14 @@ export function OrganizerDashboard({
           <p className="muted">{t.optimizeIntro}</p>
           <button
             disabled={busy}
-            onClick={() => setOpt(optimize(participants, assignments, eff))}
+            onClick={() => setOpt(solve(participants, assignments, rooms, eff))}
           >
             {t.optimizeRun}
           </button>
-          {opt && opt.proposals.length === 0 && (
+          {opt && !opt.changed && (
             <p className="banner banner--ok">{t.optimizeNone}</p>
           )}
-          {opt && opt.proposals.length > 0 && (
+          {opt && opt.changed && (
             <>
               <p className="muted">
                 {t.optimizeSummary(
@@ -247,31 +250,43 @@ export function OrganizerDashboard({
                 )}
               </p>
               <ul className="assign">
-                {opt.proposals.map((s, i) => (
-                  <li key={`${s.aId}-${s.bId}-${i}`} className="assign__row">
+                {opt.swaps.map((sw, i) => (
+                  <li key={`sw-${sw.aId}-${sw.bId}-${i}`} className="assign__row">
                     <span className="assign__name">
                       {t.swapWith(
-                        nameOf(s.aId),
-                        roomNameOf(s.aId),
-                        nameOf(s.bId),
-                        roomNameOf(s.bId),
+                        nameOf(sw.aId),
+                        roomNameOf(sw.aId),
+                        nameOf(sw.bId),
+                        roomNameOf(sw.bId),
                       )}
                     </span>
-                    <button
-                      disabled={busy}
-                      onClick={() =>
-                        act(async () => {
-                          const res = await adminSwap(s.aId, s.bId, passcode);
-                          if (res.ok) setOpt(null); // stale after the swap
-                          return res;
-                        })
-                      }
-                    >
-                      {t.apply}
-                    </button>
+                  </li>
+                ))}
+                {opt.moves.map((mv, i) => (
+                  <li key={`mv-${mv.participantId}-${i}`} className="assign__row">
+                    <span className="assign__name">
+                      {t.moveTo(nameOf(mv.participantId), roomNameById(mv.toRoomId))}
+                    </span>
                   </li>
                 ))}
               </ul>
+              <button
+                disabled={busy}
+                onClick={() =>
+                  act(async () => {
+                    const res = await adminSetAssignments(
+                      tripId,
+                      opt.target.map((r) => r.participantId),
+                      opt.target.map((r) => r.roomId),
+                      passcode,
+                    );
+                    if (res.ok) setOpt(null); // stale after apply; realtime reloads
+                    return res;
+                  })
+                }
+              >
+                {t.applyAll}
+              </button>
             </>
           )}
           <div className="danger-zone">

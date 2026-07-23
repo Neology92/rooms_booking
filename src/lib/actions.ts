@@ -303,6 +303,24 @@ export async function adminDeleteTrip(
   return error ? { ok: false, error: toMessage(error.message) } : { ok: true };
 }
 
+// Atomically apply a full solver plan (NEEDS §9): parallel participant/room
+// arrays. Server re-validates capacity + one-room + the full-set contract.
+export async function adminSetAssignments(
+  tripId: string,
+  participantIds: string[],
+  roomIds: string[],
+  passcode: string,
+): Promise<ActionResult> {
+  if (!supabase) return { ok: false, error: activeErrors.UNKNOWN };
+  const { error } = await supabase.rpc("admin_set_assignments", {
+    p_trip_id: tripId,
+    p_passcode: passcode,
+    p_participant_ids: participantIds,
+    p_room_ids: roomIds,
+  });
+  return error ? { ok: false, error: toMessage(error.message) } : { ok: true };
+}
+
 // Apply one optimizer swap proposal (Phase 5): two participants exchange rooms.
 export async function adminSwap(
   aId: string,
