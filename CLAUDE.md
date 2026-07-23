@@ -161,6 +161,16 @@ sygnalizację i optymalizator — `unmetRules`/`optimize` bez zmian, `rules`/`as
 nietknięte (§10 bezpieczne). Projekt i review przez multi-agent workflow (panel
 projektowy + adversarialna weryfikacja diffu).
 
+Faza 9 — **solver** (`DIRECTION.md`, `NEEDS §9`, `0011`): `src/lib/solve.ts` — symulowane
+wyżarzanie + restarty + zachłanny polish (seedowany `mulberry32`, deterministyczny),
+ruchy = zamiany **oraz** relokacje w wolne miejsca (przełamuje „ścianę osiągalności"
+swap-only — naprawia MUST-HAVE rozwiązywalne tylko przeniesieniem na wolne łóżko).
+Dynamiczna waga `W=(#preferencji)+1` (MUST-HAVE first), keep-best → **nigdy gorzej**.
+Zakres: tylko przestawianie zapisanych. Atomowy apply pełnego planu przez
+`admin_set_assignments(uuid[],uuid[])` z kontraktem pełnego zbioru (odporność na wyścig),
+capacity/one-room po stronie serwera. `optimize.ts` zostaje jako lżejsza heurystyka.
+Projekt (panel 3 podejść + sędzia) i review (0 znalezisk) przez multi-agent workflow.
+
 Kolejne kroki (świadomie odłożone, zgodne z `NEEDS`/`DIRECTION`):
-- **Pełne konta użytkowników / per-user auth**, **wysyłka e-maili** (NICE TO HAVE — odłożone
-  świadomie z uwagi na limity SMTP free, `NEEDS §11`), docelowy **solver** — `DIRECTION.md`.
+- **Pełne konta użytkowników / per-user auth** oraz **wysyłka e-maili** (NICE TO HAVE —
+  odłożone świadomie z uwagi na limity SMTP free, `NEEDS §11`) — `DIRECTION.md`.
