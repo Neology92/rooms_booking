@@ -171,6 +171,8 @@ button.danger { background: #fff; color: #991b1b; border-color: #fca5a5; }
 .room-form button { background: var(--ink); color: #fff; border-color: var(--ink); }
 .room-form button.danger { background: #fff; color: #991b1b; border-color: #fca5a5; }
 
+.drafts { margin: 0.5rem 0 1rem; padding: 0.6rem; background: #f9fafb; border: 1px dashed var(--line); border-radius: 10px; }
+.drafts > button { background: var(--ink); color: #fff; border-color: var(--ink); margin-top: 0.4rem; }
 .target-form { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: flex-end; margin: 0.75rem 0; }
 .target-form button { background: var(--ink); color: #fff; border-color: var(--ink); }
 
