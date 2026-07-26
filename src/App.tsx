@@ -7,8 +7,11 @@ import { useIdentity } from "./hooks/useIdentity";
 import { useOrganizer } from "./hooks/useOrganizer";
 import { Onboarding } from "./components/Onboarding";
 import { TripPicker } from "./components/TripPicker";
+import { AuthLanding } from "./components/AuthLanding";
 import { ParticipantView } from "./pages/ParticipantView";
 import { OrganizerDashboard } from "./pages/OrganizerDashboard";
+import { useAuth } from "./auth/AuthProvider";
+import { signOut } from "./lib/auth";
 
 type Tab = "participant" | "organizer";
 
@@ -34,6 +37,8 @@ function LangSwitch() {
 
 export default function App() {
   const s = useStrings();
+  const { user } = useAuth();
+  const [showAuth, setShowAuth] = useState(false);
   const [tab, setTab] = useState<Tab>("participant");
   const { tripId, select } = useTripId();
   const data = useTripData(tripId);
@@ -72,6 +77,9 @@ export default function App() {
   function body() {
     if (!isConfigured) {
       return <p className="banner banner--error">{s.app.missingConfig}</p>;
+    }
+    if (showAuth && !user) {
+      return <AuthLanding onDone={() => setShowAuth(false)} />;
     }
     if (!tripId) return picker;
     if (data.loading) return <p>{s.app.loading}</p>;
@@ -119,6 +127,15 @@ export default function App() {
                 {s.tripPicker.back}
               </button>
             </nav>
+          )}
+          {user ? (
+            <button className="linklike" onClick={() => void signOut()}>
+              {s.auth.signOut}
+            </button>
+          ) : (
+            <button className="linklike" onClick={() => setShowAuth(true)}>
+              {s.auth.signIn}
+            </button>
           )}
           <LangSwitch />
         </div>
