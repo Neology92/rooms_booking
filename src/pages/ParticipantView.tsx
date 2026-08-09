@@ -3,6 +3,7 @@ import { useStrings } from "../i18n/I18nProvider";
 import { joinRoom, leaveRoom } from "../lib/actions";
 import { RulesEditor } from "../components/RulesEditor";
 import { PairingsPanel } from "../components/PairingsPanel";
+import { ProposalsBar } from "../components/ProposalsBar";
 import type { TripData } from "../hooks/useTripData";
 import type { Participant } from "../types/domain";
 
@@ -51,6 +52,8 @@ export function ParticipantView({
         </button>
       </div>
 
+      <ProposalsBar me={me} data={data} />
+
       {locked && <p className="banner banner--locked">{t.locked}</p>}
       {error && <p className="banner banner--error">{error}</p>}
 
@@ -61,10 +64,19 @@ export function ParticipantView({
           const left = room.capacity - here.length;
           const mine = myRoom === room.id;
           const full = left <= 0 && !mine;
+          // Traffic light: green = free, yellow = partly filled, red = full.
+          const status =
+            here.length >= room.capacity ? "red" : here.length === 0 ? "green" : "yellow";
           return (
-            <li key={room.id} className={`room ${mine ? "room--mine" : ""}`}>
+            <li
+              key={room.id}
+              className={`room room--${status} ${mine ? "room--mine" : ""}`}
+            >
               <div className="room__head">
-                <strong>{room.name}</strong>
+                <strong>
+                  <span className={`dot dot--${status}`} aria-hidden="true" />
+                  {room.name}
+                </strong>
                 <span className={full ? "tag tag--full" : "tag"}>
                   {full ? t.full : t.spotsLeft(left)}
                 </span>

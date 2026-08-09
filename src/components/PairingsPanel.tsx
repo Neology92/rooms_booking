@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { useStrings } from "../i18n/I18nProvider";
 import {
   endPairing,
-  respondPairingRequest,
   sendPairingRequest,
   withdrawPairingRequest,
 } from "../lib/actions";
@@ -29,9 +28,6 @@ export function PairingsPanel({ me, data }: { me: Participant; data: TripData })
         (p) => p.from_participant_id === me.id || p.to_participant_id === me.id,
       ),
     [pairings, me.id],
-  );
-  const incoming = mine.filter(
-    (p) => p.status === "pending" && p.to_participant_id === me.id,
   );
   const outgoing = mine.filter(
     (p) => p.status === "pending" && p.from_participant_id === me.id,
@@ -76,36 +72,6 @@ export function PairingsPanel({ me, data }: { me: Participant; data: TripData })
       <h2>{t.heading}</h2>
       <p className="muted">{t.intro}</p>
       {error && <p className="banner banner--error">{error}</p>}
-
-      {incoming.length > 0 && (
-        <div className="rule-block">
-          <strong>{t.incoming}</strong>
-          <ul className="assign">
-            {incoming.map((p) => (
-              <li key={p.id} className="assign__row">
-                <span className="assign__name">
-                  {t.requestedBy(nameOf(p.from_participant_id))}
-                </span>
-                <span className="pairing__actions">
-                  <button
-                    disabled={busy}
-                    onClick={() => act(() => respondPairingRequest(me.id, p.id, true))}
-                  >
-                    {t.accept}
-                  </button>
-                  <button
-                    className="danger"
-                    disabled={busy}
-                    onClick={() => act(() => respondPairingRequest(me.id, p.id, false))}
-                  >
-                    {t.decline}
-                  </button>
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
 
       {accepted.length > 0 && (
         <div className="rule-block">

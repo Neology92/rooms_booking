@@ -89,7 +89,19 @@ button.danger { background: #fff; color: #991b1b; border-color: #fca5a5; }
 
 .rooms, .issues { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.6rem; }
 .room { border: 1px solid var(--line); border-radius: 10px; padding: 0.75rem; background: #fff; }
-.room--mine { border-color: var(--green); box-shadow: 0 0 0 1px var(--green); }
+.room--mine { box-shadow: 0 0 0 2px var(--brand); }
+/* Traffic light: free / partly filled / full. */
+.room--green { border-left: 5px solid var(--green); }
+.room--yellow { border-left: 5px solid var(--amber); }
+.room--red { border-left: 5px solid var(--red); }
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 0.45rem; vertical-align: middle; }
+.dot--green { background: var(--green); }
+.dot--yellow { background: var(--amber); }
+.dot--red { background: var(--red); }
+
+/* Incoming proposals, pinned prominently at the top. */
+.proposals { margin: 0 0 1rem; padding: 0.75rem; border: 1px solid #fbbf24; background: #fffbeb; border-radius: 12px; }
+.proposals h2 { margin: 0 0 0.5rem; }
 .room__head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
 .room__info { color: #6b7280; font-size: 0.85rem; margin: 0.25rem 0; }
 .room__people { margin: 0.4rem 0; }
