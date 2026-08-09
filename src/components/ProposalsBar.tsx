@@ -37,7 +37,9 @@ export function ProposalsBar({ me, data }: { me: Participant; data: TripData }) 
         {incoming.map((p) => (
           <li key={p.id} className="assign__row">
             <span className="assign__name">
-              {t.requestedBy(nameOf(p.from_participant_id))}
+              {p.kind === "swap"
+                ? t.swapRequestedBy(nameOf(p.from_participant_id))
+                : t.requestedBy(nameOf(p.from_participant_id))}
             </span>
             <span className="pairing__actions">
               <button

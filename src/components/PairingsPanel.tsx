@@ -3,6 +3,7 @@ import { useStrings } from "../i18n/I18nProvider";
 import {
   endPairing,
   sendPairingRequest,
+  sendSwapRequest,
   withdrawPairingRequest,
 } from "../lib/actions";
 import type { TripData } from "../hooks/useTripData";
@@ -14,6 +15,7 @@ export function PairingsPanel({ me, data }: { me: Participant; data: TripData })
   const t = useStrings().pairings;
   const { participants, assignments, pairings } = data;
   const [target, setTarget] = useState("");
+  const [swapTarget, setSwapTarget] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -51,6 +53,18 @@ export function PairingsPanel({ me, data }: { me: Participant; data: TripData })
   // A realtime update can make the picked target "busy" before Send is clicked.
   // Derive validity so the blank-select case can't fire a guaranteed-fail send.
   const targetValid = target !== "" && candidates.some((c) => c.id === target);
+
+  // Swap: only people assigned to a DIFFERENT room than me (and I must be in one).
+  const myRoom = roomOf(me.id);
+  const swapCandidates = participants.filter(
+    (p) =>
+      p.id !== me.id &&
+      !busyIds.has(p.id) &&
+      roomOf(p.id) !== null &&
+      roomOf(p.id) !== myRoom,
+  );
+  const swapValid =
+    myRoom !== null && swapTarget !== "" && swapCandidates.some((c) => c.id === swapTarget);
 
   async function act(fn: () => Promise<{ ok: boolean; error?: string }>) {
     setError("");
@@ -108,7 +122,9 @@ export function PairingsPanel({ me, data }: { me: Participant; data: TripData })
             {outgoing.map((p) => (
               <li key={p.id} className="assign__row">
                 <span className="assign__name">
-                  {t.requestedTo(nameOf(p.to_participant_id))}
+                  {p.kind === "swap"
+                    ? t.swapRequestedTo(nameOf(p.to_participant_id))
+                    : t.requestedTo(nameOf(p.to_participant_id))}
                 </span>
                 <button
                   disabled={busy}
@@ -151,6 +167,38 @@ export function PairingsPanel({ me, data }: { me: Participant; data: TripData })
           {t.send}
         </button>
       </div>
+
+      {myRoom !== null && (
+        <div className="rule-block">
+          <label className="field">
+            <span>{t.swapSendTo}</span>
+            <select
+              value={swapValid ? swapTarget : ""}
+              disabled={busy || swapCandidates.length === 0}
+              onChange={(e) => setSwapTarget(e.target.value)}
+            >
+              <option value="">{t.swapNone}</option>
+              {swapCandidates.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            disabled={busy || !swapValid}
+            onClick={() =>
+              act(async () => {
+                const res = await sendSwapRequest(me.id, swapTarget);
+                if (res.ok) setSwapTarget("");
+                return res;
+              })
+            }
+          >
+            {t.swapSend}
+          </button>
+        </div>
+      )}
     </section>
   );
 }

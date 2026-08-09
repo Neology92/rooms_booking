@@ -12,7 +12,14 @@ function pairing(
   to: string,
   status: PairingRequest["status"],
 ): PairingRequest {
-  return { id, trip_id: TRIP, from_participant_id: from, to_participant_id: to, status };
+  return {
+    id,
+    trip_id: TRIP,
+    from_participant_id: from,
+    to_participant_id: to,
+    status,
+    kind: "pair",
+  };
 }
 
 describe("pairingsToRules", () => {

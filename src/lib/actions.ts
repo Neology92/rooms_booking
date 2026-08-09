@@ -147,6 +147,20 @@ export async function sendPairingRequest(
   return error ? { ok: false, error: toMessage(error.message) } : { ok: true };
 }
 
+// Propose swapping rooms with someone in a different room (UX v2 #1). On accept
+// the server exchanges the two rooms atomically (blocked while sign-ups locked).
+export async function sendSwapRequest(
+  fromId: string,
+  toId: string,
+): Promise<ActionResult> {
+  if (!supabase) return { ok: false, error: activeErrors.UNKNOWN };
+  const { error } = await supabase.rpc("send_swap_request", {
+    p_from: fromId,
+    p_to: toId,
+  });
+  return error ? { ok: false, error: toMessage(error.message) } : { ok: true };
+}
+
 export async function respondPairingRequest(
   meId: string,
   requestId: string,

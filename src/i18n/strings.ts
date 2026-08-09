@@ -146,6 +146,7 @@ export const en = {
     NOT_RECIPIENT: "This request wasn't sent to you.",
     NOT_SENDER: "This isn't your request.",
     NOT_PARTICIPANT: "You're not part of this pairing.",
+    SAME_ROOM: "You're both already in the same room.",
     UNKNOWN: "Something went wrong. Please try again.",
   },
   pairings: {
@@ -166,6 +167,12 @@ export const en = {
     pairedWith: (name: string) => `Paired with ${name}`,
     together: "in the same room",
     notTogether: "not in the same room yet",
+    swapHeading: "Propose a room swap",
+    swapSendTo: "Swap rooms with",
+    swapSend: "Propose swap",
+    swapNone: "— no one to swap with —",
+    swapRequestedBy: (name: string) => `${name} wants to swap rooms with you`,
+    swapRequestedTo: (name: string) => `Swap requested — waiting for ${name}`,
   },
   tripPicker: {
     title: "Room Sign-up",
@@ -348,6 +355,7 @@ export const pl: Strings = {
     NOT_RECIPIENT: "Ta prośba nie była wysłana do Ciebie.",
     NOT_SENDER: "To nie jest Twoja prośba.",
     NOT_PARTICIPANT: "Nie należysz do tej pary.",
+    SAME_ROOM: "Oboje jesteście już w tym samym pokoju.",
     UNKNOWN: "Coś poszło nie tak. Spróbuj ponownie.",
   },
   pairings: {
@@ -368,6 +376,12 @@ export const pl: Strings = {
     pairedWith: (name: string) => `W parze z ${name}`,
     together: "w tym samym pokoju",
     notTogether: "jeszcze nie w tym samym pokoju",
+    swapHeading: "Zaproponuj zamianę pokojów",
+    swapSendTo: "Zamień się pokojem z",
+    swapSend: "Zaproponuj zamianę",
+    swapNone: "— brak osób do zamiany —",
+    swapRequestedBy: (name: string) => `${name} chce się z Tobą zamienić pokojami`,
+    swapRequestedTo: (name: string) => `Prośba o zamianę — czekasz na ${name}`,
   },
   tripPicker: {
     title: "Zapisy na pokoje",

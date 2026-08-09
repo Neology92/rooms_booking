@@ -47,14 +47,20 @@ export type PairingStatus =
   | "accepted"
   | "declined"
   | "withdrawn"
-  | "ended";
+  | "ended"
+  | "completed";
 
-// Negotiated roommate request (DIRECTION.md). An accepted pairing is a mutual
-// soft preference, folded into synthetic rules at evaluation time (rules.ts).
+// A pairing request ("pair" = room together, soft pref) or a swap proposal
+// ("swap" = exchange rooms, acted on when accepted). "invite" is reserved for #2.
+export type PairingKind = "pair" | "swap" | "invite";
+
+// Negotiated roommate request (DIRECTION.md). An accepted "pair" is a mutual soft
+// preference, folded into synthetic rules at evaluation time (rules.ts).
 export interface PairingRequest {
   id: string;
   trip_id: string;
   from_participant_id: string;
   to_participant_id: string;
   status: PairingStatus;
+  kind: PairingKind;
 }
