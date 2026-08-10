@@ -3,6 +3,7 @@ import { useStrings } from "../i18n/I18nProvider";
 import {
   endPairing,
   sendPairingRequest,
+  sendRoomInvite,
   sendSwapRequest,
   withdrawPairingRequest,
 } from "../lib/actions";
@@ -16,6 +17,7 @@ export function PairingsPanel({ me, data }: { me: Participant; data: TripData })
   const { participants, assignments, pairings } = data;
   const [target, setTarget] = useState("");
   const [swapTarget, setSwapTarget] = useState("");
+  const [inviteTarget, setInviteTarget] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -65,6 +67,16 @@ export function PairingsPanel({ me, data }: { me: Participant; data: TripData })
   );
   const swapValid =
     myRoom !== null && swapTarget !== "" && swapCandidates.some((c) => c.id === swapTarget);
+
+  // Invite: anyone not already in my room (includes unassigned participants).
+  const inviteCandidates = participants.filter(
+    (p) =>
+      p.id !== me.id &&
+      !busyIds.has(p.id) &&
+      roomOf(p.id) !== myRoom,
+  );
+  const inviteValid =
+    myRoom !== null && inviteTarget !== "" && inviteCandidates.some((c) => c.id === inviteTarget);
 
   async function act(fn: () => Promise<{ ok: boolean; error?: string }>) {
     setError("");
@@ -122,9 +134,11 @@ export function PairingsPanel({ me, data }: { me: Participant; data: TripData })
             {outgoing.map((p) => (
               <li key={p.id} className="assign__row">
                 <span className="assign__name">
-                  {p.kind === "swap"
-                    ? t.swapRequestedTo(nameOf(p.to_participant_id))
-                    : t.requestedTo(nameOf(p.to_participant_id))}
+                  {p.kind === "invite"
+                    ? t.inviteRequestedTo(nameOf(p.to_participant_id))
+                    : p.kind === "swap"
+                      ? t.swapRequestedTo(nameOf(p.to_participant_id))
+                      : t.requestedTo(nameOf(p.to_participant_id))}
                 </span>
                 <button
                   disabled={busy}
@@ -196,6 +210,38 @@ export function PairingsPanel({ me, data }: { me: Participant; data: TripData })
             }
           >
             {t.swapSend}
+          </button>
+        </div>
+      )}
+
+      {myRoom !== null && (
+        <div className="rule-block">
+          <label className="field">
+            <span>{t.inviteSendTo}</span>
+            <select
+              value={inviteValid ? inviteTarget : ""}
+              disabled={busy || inviteCandidates.length === 0}
+              onChange={(e) => setInviteTarget(e.target.value)}
+            >
+              <option value="">{t.inviteNone}</option>
+              {inviteCandidates.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            disabled={busy || !inviteValid}
+            onClick={() =>
+              act(async () => {
+                const res = await sendRoomInvite(me.id, inviteTarget);
+                if (res.ok) setInviteTarget("");
+                return res;
+              })
+            }
+          >
+            {t.inviteSend}
           </button>
         </div>
       )}

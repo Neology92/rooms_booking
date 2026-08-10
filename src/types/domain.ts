@@ -50,8 +50,8 @@ export type PairingStatus =
   | "ended"
   | "completed";
 
-// A pairing request ("pair" = room together, soft pref) or a swap proposal
-// ("swap" = exchange rooms, acted on when accepted). "invite" is reserved for #2.
+// A pairing request ("pair" = room together, soft pref), swap proposal
+// ("swap" = exchange rooms), or room invitation ("invite" = join inviter's room).
 export type PairingKind = "pair" | "swap" | "invite";
 
 // Negotiated roommate request (DIRECTION.md). An accepted "pair" is a mutual soft

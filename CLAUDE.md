@@ -171,6 +171,30 @@ Zakres: tylko przestawianie zapisanych. Atomowy apply pełnego planu przez
 capacity/one-room po stronie serwera. `optimize.ts` zostaje jako lżejsza heurystyka.
 Projekt (panel 3 podejść + sędzia) i review (0 znalezisk) przez multi-agent workflow.
 
+Faza 10 — **konta użytkowników** (`DIRECTION.md`, `0012`): Supabase Auth (e-mail/hasło),
+`AuthProvider` + `useAuth` hook, formularz logowania/rejestracji, guard na stronach.
+Konta są niezależne od uczestników wyjazdu (równoległe ścieżki: uczestnik = trust-based
+imię, konto = opcjonalne). Rollout note w UI. Migracja `0012` dodaje RLS + tabele auth.
+
+Faza 11 — **propozycje zamiany** (`DIRECTION.md`, `0013`): uczestnik w pokoju może
+zaproponować zamianę pokojów z kimś w innym pokoju. Nowy `kind='swap'` +
+`status='completed'` w `pairing_requests`. `send_swap_request` waliduje różne pokoje;
+`respond_pairing_request` na accept atomowo wymienia pokoje obu stron i ustawia
+`completed` (nie `accepted` — zamiana nie generuje syntetycznej preferencji).
+Zablokowane przy `signups_locked`. UI: sekcja swap w `PairingsPanel`, wyświetlanie
+w `ProposalsBar`. Testy integracyjne (`swap.integration.test.ts`).
+
+Faza 12 — **zaproszenia do pokoju** (`DIRECTION.md`, `0014`): uczestnik w pokoju może
+zaprosić kogoś do dołączenia. `send_room_invite` — zapraszający musi być w pokoju,
+zapraszany w tym samym wyjeździe (może być bez pokoju lub w innym).
+`respond_pairing_request` na accept: sprawdza lock, znajduje aktualny pokój
+zapraszającego, blokuje wiersz pokoju (FOR UPDATE), sprawdza pojemność, przenosi
+zapraszanego (INSERT ON CONFLICT). Status → `completed`. Pojemność i lock
+egzekwowane po stronie serwera (§10.2, §10.3). UI: sekcja invite w `PairingsPanel`,
+wyświetlanie w `ProposalsBar`, i18n EN+PL. Testy integracyjne
+(`invite.integration.test.ts`): happy path, unassigned, room full, lock, same room,
+inviter not assigned, decline.
+
 Kolejne kroki (świadomie odłożone, zgodne z `NEEDS`/`DIRECTION`):
 - **Pełne konta użytkowników / per-user auth** oraz **wysyłka e-maili** (NICE TO HAVE —
   odłożone świadomie z uwagi na limity SMTP free, `NEEDS §11`) — `DIRECTION.md`.
