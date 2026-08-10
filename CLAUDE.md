@@ -195,6 +195,25 @@ wyświetlanie w `ProposalsBar`, i18n EN+PL. Testy integracyjne
 (`invite.integration.test.ts`): happy path, unassigned, room full, lock, same room,
 inviter not assigned, decline.
 
+Faza 13 — **audyt UX + solvera i naprawy**: dwa niezależne audyty (UX flow uczestnika,
+kompletność solvera) potwierdziły poprawność solvera i znalazły 5 bugów — wszystkie
+naprawione: (1) zapytanie o `rules` w `useTripData` nieograniczone do wyjazdu (wyciek
+między wyjazdami; fix: inner-join embed przez `participants.trip_id` — `rules` nie ma
+kolumny `trip_id`), (2) `describe()` w dashboardzie po angielsku w trybie PL
+(→ `describeIssue` + i18n), (3) brak stylu `banner--pref`, (4) nierenderowane
+`viewOnly`, (5) nierenderowane nagłówki swap/invite. Do tego: panel problemów nad
+strefą niebezpieczną, tagi rodzaju + linia konsekwencji w `ProposalsBar` („Akceptacja
+przenosi Cię do pokoju X" — swap/invite działają od razu, pair to tylko preferencja),
++6 testów luk (gender `other`, same-gender jako preferencja, solver bez reguł /
+1 osoba / syntetyczne reguły z pairingów), koszt fuzz testu wyrównany do formuły solvera.
+
+Faza 14 — **maile: Resend przez Edge Function** (`DIRECTION §1`): funkcja
+`supabase/functions/send-room-emails` — organizator (kod weryfikowany server-side
+przez `verify_organizer`) rozsyła uczestnikom z e-mailem ich pokój (Resend batch API,
+1 call na blast; 40 osób ≪ 100 maili/dzień free). Wymagane sekrety w Supabase:
+`RESEND_API_KEY`, opcjonalnie `MAIL_FROM` (bez zweryfikowanej domeny Resend wysyła
+tylko na adres właściciela konta — tryb testowy). UI-przycisk w dashboardzie — TODO.
+
 Kolejne kroki (świadomie odłożone, zgodne z `NEEDS`/`DIRECTION`):
-- **Pełne konta użytkowników / per-user auth** oraz **wysyłka e-maili** (NICE TO HAVE —
-  odłożone świadomie z uwagi na limity SMTP free, `NEEDS §11`) — `DIRECTION.md`.
+- Przycisk wysyłki maili w dashboardzie organizatora (funkcja już wdrożona).
+- **Pełne konta użytkowników / per-user auth** — `DIRECTION.md`.
