@@ -56,7 +56,12 @@ export function useTripData(tripId: string | undefined) {
       supabase.from("rooms").select("*").eq("trip_id", trip.id).order("name"),
       supabase.from("participants").select("*").eq("trip_id", trip.id).order("name"),
       supabase.from("assignments").select("*").eq("trip_id", trip.id),
-      supabase.from("rules").select("*"),
+      // rules has no trip_id column — scope through the participant's trip via an
+      // inner join, else we'd pull (and evaluate) every trip's rules.
+      supabase
+        .from("rules")
+        .select("*, participants!inner(trip_id)")
+        .eq("participants.trip_id", trip.id),
       supabase.from("pairing_requests").select("*").eq("trip_id", trip.id),
     ]);
     setData({
@@ -64,7 +69,12 @@ export function useTripData(tripId: string | undefined) {
       rooms: rooms.data ?? [],
       participants: participants.data ?? [],
       assignments: assignments.data ?? [],
-      rules: rules.data ?? [],
+      // Strip the embedded join object so Rule rows keep their domain shape.
+      rules: (rules.data ?? []).map((row) => {
+        const rule = { ...row };
+        delete rule.participants;
+        return rule as Rule;
+      }),
       pairings: pairings.data ?? [],
     });
     setLoading(false);

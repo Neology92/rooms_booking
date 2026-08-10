@@ -37,6 +37,29 @@ describe("same_gender rule", () => {
     const assignments = [assign("alice", "A"), assign("carol", "A")];
     expect(unmetRules([rule], assignments, [...participants, carol])).toHaveLength(0);
   });
+
+  it("treats 'other' as a distinct gender", () => {
+    const errol = p("errol", "other");
+    const ruleOther: Rule = { ...rule, participant_id: "errol" };
+    const assignments = [assign("errol", "A"), assign("bob", "A")];
+    expect(
+      unmetRules([ruleOther], assignments, [...participants, errol]),
+    ).toHaveLength(1);
+    // …and satisfied among other-gender roommates
+    const female2 = p("erin", "other");
+    const together = [assign("errol", "A"), assign("erin", "A")];
+    expect(
+      unmetRules([ruleOther], together, [...participants, errol, female2]),
+    ).toHaveLength(0);
+  });
+
+  it("works with preference strictness (non-critical bucket)", () => {
+    const soft: Rule = { ...rule, strictness: "preference" };
+    const assignments = [assign("alice", "A"), assign("bob", "A")];
+    const unmet = unmetRules([soft], assignments, participants);
+    expect(splitBySeverity(unmet).critical).toHaveLength(0);
+    expect(splitBySeverity(unmet).preferences).toHaveLength(1);
+  });
 });
 
 describe("preferred_person rule", () => {

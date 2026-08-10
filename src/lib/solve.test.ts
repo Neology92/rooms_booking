@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { solve } from "./solve";
 import { optimize } from "./optimize";
-import type { Assignment, Participant, Room, Rule } from "../types/domain";
+import { effectiveRules } from "./rules";
+import type {
+  Assignment,
+  PairingRequest,
+  Participant,
+  Room,
+  Rule,
+} from "../types/domain";
 
 const T = "trip-1";
 function P(id: string, gender: Participant["gender"] = null): Participant {
@@ -31,8 +38,13 @@ function sameGender(pid: string): Rule {
     target_participant_id: null,
   };
 }
-const cost = (s: { critical: number; preferences: number }) =>
-  s.critical * 1_000_000 + s.preferences;
+// Mirrors the solver's own cost formula (dynamic W = #preference rules + 1) so
+// the never-worse fuzz assertion can't drift from what solve() optimizes.
+const costWith =
+  (rules: Rule[]) =>
+  (s: { critical: number; preferences: number }) =>
+    s.critical * (rules.filter((r) => r.strictness === "preference").length + 1) +
+    s.preferences;
 
 describe("solve", () => {
   it("resolves the NEEDS §9 example (o & p end up together)", () => {
@@ -97,6 +109,63 @@ describe("solve", () => {
     expect(res.moves).toHaveLength(0);
   });
 
+  it("returns changed:false with zero rules (nothing to improve)", () => {
+    const participants = [P("a"), P("b"), P("c")];
+    const assignments = [A("a", "A"), A("b", "A"), A("c", "B")];
+    const rooms = [R("A", 2), R("B", 2)];
+    const res = solve(participants, assignments, rooms, [], { seed: 1 });
+    expect(res.changed).toBe(false);
+    expect(res.after.critical).toBe(0);
+    expect(res.after.preferences).toBe(0);
+  });
+
+  it("returns the input unchanged for a single participant", () => {
+    const participants = [P("solo", "female")];
+    const assignments = [A("solo", "A")];
+    const rooms = [R("A", 2), R("B", 2)];
+    const res = solve(participants, assignments, rooms, [sameGender("solo")], {
+      seed: 1,
+    });
+    expect(res.changed).toBe(false);
+    expect(res.target).toEqual([{ participantId: "solo", roomId: "A" }]);
+  });
+
+  it("honours synthetic rules from an accepted pairing (effectiveRules)", () => {
+    // o & p accepted a pairing but have no manual rules; the solver should
+    // still bring them together via the synthetic two-way soft preferences.
+    const participants = ["x", "y", "z", "o", "p"].map((id) => P(id));
+    const assignments = [A("x", "A"), A("y", "A"), A("o", "A"), A("z", "B"), A("p", "B")];
+    const rooms = [R("A", 3), R("B", 2)];
+    const pairing: PairingRequest = {
+      id: "pr1",
+      trip_id: T,
+      from_participant_id: "o",
+      to_participant_id: "p",
+      status: "accepted",
+      kind: "pair",
+    };
+    const eff = effectiveRules([], [pairing], participants);
+    expect(eff).toHaveLength(2); // both directions synthesized
+
+    const res = solve(participants, assignments, rooms, eff, { seed: 1 });
+    expect(res.before.preferences).toBe(2);
+    expect(res.after.preferences).toBe(0);
+    assertValid(res.target, rooms);
+  });
+
+  it("ignores completed pairings (swap/invite leave no preference behind)", () => {
+    const participants = [P("o"), P("p")];
+    const done: PairingRequest = {
+      id: "pr2",
+      trip_id: T,
+      from_participant_id: "o",
+      to_participant_id: "p",
+      status: "completed",
+      kind: "swap",
+    };
+    expect(effectiveRules([], [done], participants)).toHaveLength(0);
+  });
+
   it("is deterministic for a fixed seed", () => {
     const participants = ["x", "y", "z", "o", "p"].map((id) => P(id));
     const assignments = [A("x", "A"), A("y", "A"), A("o", "A"), A("z", "B"), A("p", "B")];
@@ -148,6 +217,7 @@ describe("solve", () => {
 
       const res = solve(participants, assignments, rooms, rules, { seed: iter + 1 });
       // never worse
+      const cost = costWith(rules);
       expect(cost(res.after)).toBeLessThanOrEqual(cost(res.before));
       if (cost(res.after) === cost(res.before)) expect(res.changed).toBe(false);
       // valid target

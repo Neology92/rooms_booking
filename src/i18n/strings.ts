@@ -109,6 +109,8 @@ export const en = {
     deleteTrip: "Delete trip",
     deleteConfirm: (name: string) =>
       `Delete "${name}" and all its rooms, participants and assignments? This cannot be undone.`,
+    issueSameGender: "same-gender room",
+    issueWantsWith: (name: string) => `wants to be with ${name}`,
   },
   organizerAuth: {
     claimHeading: "Claim this trip",
@@ -174,11 +176,20 @@ export const en = {
     swapRequestedBy: (name: string) => `${name} wants to swap rooms with you`,
     swapRequestedTo: (name: string) => `Swap requested — waiting for ${name}`,
     inviteHeading: "Invite to your room",
-    inviteSendTo: "Invite to join your room",
+    inviteSendTo: "Who to invite",
     inviteSend: "Send invitation",
     inviteNone: "— no one to invite —",
     inviteRequestedBy: (name: string) => `${name} invited you to join their room`,
     inviteRequestedTo: (name: string) => `Invitation sent — waiting for ${name}`,
+    swapIntro: "Exchange rooms with someone — happens the moment they accept.",
+    inviteIntro: "Ask someone to join your room — they move in when they accept.",
+    kindPair: "request",
+    kindSwap: "swap",
+    kindInvite: "invite",
+    pairConsequence: "Accepting makes this a mutual preference — nobody changes rooms.",
+    swapConsequence: (room: string) =>
+      `Accepting moves you to room ${room} — they take your spot.`,
+    inviteConsequence: (room: string) => `Accepting moves you to room ${room}.`,
   },
   tripPicker: {
     title: "Room Sign-up",
@@ -324,6 +335,8 @@ export const pl: Strings = {
     deleteTrip: "Usuń wyjazd",
     deleteConfirm: (name: string) =>
       `Usunąć „${name}" wraz ze wszystkimi pokojami, uczestnikami i przypisaniami? Tego nie można cofnąć.`,
+    issueSameGender: "pokój jednopłciowy",
+    issueWantsWith: (name: string) => `chce być z ${name}`,
   },
   organizerAuth: {
     claimHeading: "Przejmij ten wyjazd",
@@ -389,11 +402,20 @@ export const pl: Strings = {
     swapRequestedBy: (name: string) => `${name} chce się z Tobą zamienić pokojami`,
     swapRequestedTo: (name: string) => `Prośba o zamianę — czekasz na ${name}`,
     inviteHeading: "Zaproś do swojego pokoju",
-    inviteSendTo: "Zaproś do swojego pokoju",
+    inviteSendTo: "Kogo zaprosić",
     inviteSend: "Wyślij zaproszenie",
     inviteNone: "— brak osób do zaproszenia —",
     inviteRequestedBy: (name: string) => `${name} zaprasza Cię do swojego pokoju`,
     inviteRequestedTo: (name: string) => `Zaproszenie wysłane — czekasz na ${name}`,
+    swapIntro: "Zamień się pokojem z kimś — wchodzi w życie od razu po akceptacji.",
+    inviteIntro: "Zaproś kogoś do swojego pokoju — przeniesie się po akceptacji.",
+    kindPair: "prośba",
+    kindSwap: "zamiana",
+    kindInvite: "zaproszenie",
+    pairConsequence: "Akceptacja tworzy wzajemną preferencję — nikt nie zmienia pokoju.",
+    swapConsequence: (room: string) =>
+      `Akceptacja przenosi Cię do pokoju ${room} — ta osoba zajmie Twoje miejsce.`,
+    inviteConsequence: (room: string) => `Akceptacja przenosi Cię do pokoju ${room}.`,
   },
   tripPicker: {
     title: "Zapisy na pokoje",

@@ -64,6 +64,13 @@ export function OrganizerDashboard({
   const fillOf = (roomId: string) =>
     assignments.filter((a) => a.room_id === roomId).length;
 
+  const describeIssue = (type: string, target: string | null): string => {
+    if (type === "same_gender") return t.issueSameGender;
+    if (type === "preferred_person" && target)
+      return t.issueWantsWith(nameOf(target));
+    return type;
+  };
+
   // Run an organizer action; a stale passcode (NOT_ORGANIZER) drops us back to
   // the sign-in panel so the organizer can re-enter it.
   async function act(fn: () => Promise<{ ok: boolean; error?: string }>) {
@@ -138,13 +145,36 @@ export function OrganizerDashboard({
         })}
       </ul>
 
+      <h2>{t.issues}</h2>
+      {critical.length === 0 && preferences.length === 0 ? (
+        <p className="banner banner--ok">{t.allGood}</p>
+      ) : (
+        <ul className="issues">
+          {critical.map((u) => (
+            <li key={u.rule.id} className="issue issue--critical">
+              <strong>{t.mustHaveViolation}:</strong> {nameOf(u.participantId)} —{" "}
+              {describeIssue(u.rule.type, u.rule.target_participant_id)}
+            </li>
+          ))}
+          {preferences.map((u) => (
+            <li key={u.rule.id} className="issue issue--pref">
+              <strong>{t.preferenceUnmet}:</strong> {nameOf(u.participantId)} —{" "}
+              {describeIssue(u.rule.type, u.rule.target_participant_id)}
+            </li>
+          ))}
+        </ul>
+      )}
+
       {!authed ? (
-        <OrganizerAuth
-          tripId={tripId}
-          claimed={trip.organizer_claimed}
-          onAuthed={onAuthed}
-          onClaimed={onReload}
-        />
+        <>
+          <p className="muted">{s.organizerAuth.viewOnly}</p>
+          <OrganizerAuth
+            tripId={tripId}
+            claimed={trip.organizer_claimed}
+            onAuthed={onAuthed}
+            onClaimed={onReload}
+          />
+        </>
       ) : (
         <>
           {error && <p className="banner banner--error">{error}</p>}
@@ -308,36 +338,6 @@ export function OrganizerDashboard({
           </div>
         </>
       )}
-
-      <h2>{t.issues}</h2>
-      {critical.length === 0 && preferences.length === 0 ? (
-        <p className="banner banner--ok">{t.allGood}</p>
-      ) : (
-        <ul className="issues">
-          {critical.map((u) => (
-            <li key={u.rule.id} className="issue issue--critical">
-              <strong>{t.mustHaveViolation}:</strong> {nameOf(u.participantId)} —{" "}
-              {describe(u.rule.type, u.rule.target_participant_id, nameOf)}
-            </li>
-          ))}
-          {preferences.map((u) => (
-            <li key={u.rule.id} className="issue issue--pref">
-              <strong>{t.preferenceUnmet}:</strong> {nameOf(u.participantId)} —{" "}
-              {describe(u.rule.type, u.rule.target_participant_id, nameOf)}
-            </li>
-          ))}
-        </ul>
-      )}
     </section>
   );
-}
-
-function describe(
-  type: string,
-  target: string | null,
-  nameOf: (id: string) => string,
-): string {
-  if (type === "same_gender") return "same-gender room";
-  if (type === "preferred_person" && target) return `wants to be with ${nameOf(target)}`;
-  return type;
 }

@@ -184,6 +184,8 @@ export function PairingsPanel({ me, data }: { me: Participant; data: TripData })
 
       {myRoom !== null && (
         <div className="rule-block">
+          <strong>{t.swapHeading}</strong>
+          <p className="muted">{t.swapIntro}</p>
           <label className="field">
             <span>{t.swapSendTo}</span>
             <select
@@ -216,6 +218,8 @@ export function PairingsPanel({ me, data }: { me: Participant; data: TripData })
 
       {myRoom !== null && (
         <div className="rule-block">
+          <strong>{t.inviteHeading}</strong>
+          <p className="muted">{t.inviteIntro}</p>
           <label className="field">
             <span>{t.inviteSendTo}</span>
             <select
