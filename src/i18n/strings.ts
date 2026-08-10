@@ -111,6 +111,15 @@ export const en = {
       `Delete "${name}" and all its rooms, participants and assignments? This cannot be undone.`,
     issueSameGender: "same-gender room",
     issueWantsWith: (name: string) => `wants to be with ${name}`,
+    emails: "Email participants",
+    emailsIntro:
+      "Send everyone who left an e-mail address their current room assignment.",
+    emailsSend: "Send room details",
+    emailsConfirm: (n: number) => `Send ${n} e-mail${n === 1 ? "" : "s"} now?`,
+    emailsResult: (sent: number, skipped: number) =>
+      `Sent ${sent} e-mail${sent === 1 ? "" : "s"}` +
+      (skipped > 0 ? `, skipped ${skipped} without an address` : "") +
+      ".",
   },
   organizerAuth: {
     claimHeading: "Claim this trip",
@@ -149,6 +158,9 @@ export const en = {
     NOT_SENDER: "This isn't your request.",
     NOT_PARTICIPANT: "You're not part of this pairing.",
     SAME_ROOM: "You're both already in the same room.",
+    MAIL_NOT_CONFIGURED:
+      "E-mail sending isn't configured yet (missing Resend API key).",
+    SEND_FAILED: "The e-mail service rejected the send. Try again later.",
     UNKNOWN: "Something went wrong. Please try again.",
   },
   pairings: {
@@ -337,6 +349,16 @@ export const pl: Strings = {
       `Usunąć „${name}" wraz ze wszystkimi pokojami, uczestnikami i przypisaniami? Tego nie można cofnąć.`,
     issueSameGender: "pokój jednopłciowy",
     issueWantsWith: (name: string) => `chce być z ${name}`,
+    emails: "Maile do uczestników",
+    emailsIntro:
+      "Wyślij każdemu, kto podał adres e-mail, jego aktualny przydział pokoju.",
+    emailsSend: "Wyślij przydziały pokojów",
+    emailsConfirm: (n: number) =>
+      `Wysłać teraz ${n} ${n === 1 ? "mail" : "maili"}?`,
+    emailsResult: (sent: number, skipped: number) =>
+      `Wysłano ${sent} ${sent === 1 ? "mail" : "maili"}` +
+      (skipped > 0 ? `, pominięto ${skipped} osób bez adresu` : "") +
+      ".",
   },
   organizerAuth: {
     claimHeading: "Przejmij ten wyjazd",
@@ -375,6 +397,9 @@ export const pl: Strings = {
     NOT_SENDER: "To nie jest Twoja prośba.",
     NOT_PARTICIPANT: "Nie należysz do tej pary.",
     SAME_ROOM: "Oboje jesteście już w tym samym pokoju.",
+    MAIL_NOT_CONFIGURED:
+      "Wysyłka e-maili nie jest jeszcze skonfigurowana (brak klucza API Resend).",
+    SEND_FAILED: "Usługa e-mail odrzuciła wysyłkę. Spróbuj ponownie później.",
     UNKNOWN: "Coś poszło nie tak. Spróbuj ponownie.",
   },
   pairings: {

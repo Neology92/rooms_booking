@@ -5,6 +5,7 @@ import {
   adminSetAssignments,
   adminSetTarget,
   adminUnassign,
+  sendRoomEmails,
   setSignupsLock,
 } from "../lib/actions";
 import { effectiveRules, splitBySeverity, tripStatus, unmetRules } from "../lib/rules";
@@ -42,6 +43,7 @@ export function OrganizerDashboard({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [opt, setOpt] = useState<SolveResult | null>(null);
+  const [mailResult, setMailResult] = useState("");
   const [targetDraft, setTargetDraft] = useState(
     trip?.target_headcount != null ? String(trip.target_headcount) : "",
   );
@@ -319,6 +321,28 @@ export function OrganizerDashboard({
               </button>
             </>
           )}
+          <h2>{t.emails}</h2>
+          <p className="muted">{t.emailsIntro}</p>
+          {mailResult && <p className="banner banner--ok">{mailResult}</p>}
+          <button
+            disabled={busy}
+            onClick={() => {
+              const n = participants.filter((p) => p.email).length;
+              if (!window.confirm(t.emailsConfirm(n))) return;
+              void act(async () => {
+                setMailResult("");
+                const res = await sendRoomEmails(tripId, passcode);
+                if (res.ok)
+                  setMailResult(
+                    t.emailsResult(res.sent ?? 0, res.skippedNoEmail ?? 0),
+                  );
+                return res;
+              });
+            }}
+          >
+            {t.emailsSend}
+          </button>
+
           <div className="danger-zone">
             <h2>{t.dangerZone}</h2>
             <button

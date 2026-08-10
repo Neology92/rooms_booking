@@ -212,8 +212,9 @@ Faza 14 — **maile: Resend przez Edge Function** (`DIRECTION §1`): funkcja
 przez `verify_organizer`) rozsyła uczestnikom z e-mailem ich pokój (Resend batch API,
 1 call na blast; 40 osób ≪ 100 maili/dzień free). Wymagane sekrety w Supabase:
 `RESEND_API_KEY`, opcjonalnie `MAIL_FROM` (bez zweryfikowanej domeny Resend wysyła
-tylko na adres właściciela konta — tryb testowy). UI-przycisk w dashboardzie — TODO.
+tylko na adres właściciela konta — tryb testowy). UI: sekcja „Maile do uczestników"
+w dashboardzie (confirm z liczbą odbiorców, wynik wysyłki, i18n EN+PL, mapowanie
+błędów `MAIL_NOT_CONFIGURED`/`SEND_FAILED`/`NOT_ORGANIZER`).
 
 Kolejne kroki (świadomie odłożone, zgodne z `NEEDS`/`DIRECTION`):
-- Przycisk wysyłki maili w dashboardzie organizatora (funkcja już wdrożona).
 - **Pełne konta użytkowników / per-user auth** — `DIRECTION.md`.

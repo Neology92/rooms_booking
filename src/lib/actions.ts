@@ -349,6 +349,40 @@ export async function adminSetAssignments(
   return error ? { ok: false, error: toMessage(error.message) } : { ok: true };
 }
 
+// Organizer mailing (Phase 14): the Edge Function re-verifies the passcode
+// server-side and mails each participant (who left an address) their room.
+export interface SendEmailsResult extends ActionResult {
+  sent?: number;
+  skippedNoEmail?: number;
+}
+
+export async function sendRoomEmails(
+  tripId: string,
+  passcode: string,
+): Promise<SendEmailsResult> {
+  if (!supabase) return { ok: false, error: activeErrors.UNKNOWN };
+  const { data, error } = await supabase.functions.invoke("send-room-emails", {
+    body: { trip_id: tripId, passcode },
+  });
+  if (error) {
+    // Non-2xx lands here; the function's { error: CODE } body sits on context.
+    let code: string | undefined;
+    try {
+      const ctx = (error as { context?: Response }).context;
+      code = (await ctx?.json())?.error;
+    } catch {
+      /* fall through to UNKNOWN */
+    }
+    return { ok: false, error: toMessage(code) };
+  }
+  if (data?.error) return { ok: false, error: toMessage(data.error as string) };
+  return {
+    ok: true,
+    sent: (data?.sent as number) ?? 0,
+    skippedNoEmail: (data?.skipped_no_email as number) ?? 0,
+  };
+}
+
 // Apply one optimizer swap proposal (Phase 5): two participants exchange rooms.
 export async function adminSwap(
   aId: string,
