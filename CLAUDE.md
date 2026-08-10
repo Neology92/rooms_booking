@@ -171,6 +171,20 @@ Zakres: tylko przestawianie zapisanych. Atomowy apply pełnego planu przez
 capacity/one-room po stronie serwera. `optimize.ts` zostaje jako lżejsza heurystyka.
 Projekt (panel 3 podejść + sędzia) i review (0 znalezisk) przez multi-agent workflow.
 
+Faza 10 — **fundament kont** (`0012`): schemat Supabase Auth (additywnie, bez
+łamania istniejących flow), landing sign-in/up. UX: szybkie wsadowe dodawanie pokojów
+(lista robocza + ilość, jeden zapis), panel propozycji na górze widoku uczestnika,
+sygnalizacja pokoi zielony/żółty/czerwony.
+
+Faza 11 — **propozycje zamiany pokojów** (`DIRECTION.md §3`, `0013`): uczestnik
+zapisany do pokoju może zaproponować zamianę (`send_swap_request`) komuś w innym
+pokoju. Na akceptację serwer atomowo wymienia pokoje i oznacza request `completed`
+(terminal — NIE wpływa na `effectiveRules`, które patrzą tylko na `accepted`).
+Blokowane przy locku (`§10.3`); zamiana zachowuje obłożenie, więc capacity/one-room
+(`§10.1`/`§10.2`) zawsze trzymają. UI: `PairingsPanel` (wysyłanie swap),
+`ProposalsBar` (przyjmowanie/odrzucanie), i18n EN+PL. Testy integracyjne zamiany
+pokojów.
+
 Kolejne kroki (świadomie odłożone, zgodne z `NEEDS`/`DIRECTION`):
 - **Pełne konta użytkowników / per-user auth** oraz **wysyłka e-maili** (NICE TO HAVE —
   odłożone świadomie z uwagi na limity SMTP free, `NEEDS §11`) — `DIRECTION.md`.
