@@ -216,5 +216,71 @@ tylko na adres właściciela konta — tryb testowy). UI: sekcja „Maile do ucz
 w dashboardzie (confirm z liczbą odbiorców, wynik wysyłki, i18n EN+PL, mapowanie
 błędów `MAIL_NOT_CONFIGURED`/`SEND_FAILED`/`NOT_ORGANIZER`).
 
-Kolejne kroki (świadomie odłożone, zgodne z `NEEDS`/`DIRECTION`):
-- **Pełne konta użytkowników / per-user auth** — `DIRECTION.md`.
+---
+
+## 8. TODO — dług techniczny i niedokończone
+
+### 8.1. ⚠️ Maile: konfiguracja niedokończona (BLOKUJE realne użycie)
+Kod i UI gotowe, wdrożone. **Brakuje konfiguracji po stronie usług** — do zrobienia
+przez administratora aplikacji (właściciela konta Supabase/Resend):
+1. Załóż konto na resend.com, wygeneruj klucz API.
+2. Supabase → Edge Functions → Secrets: dodaj `RESEND_API_KEY`.
+3. **Zweryfikuj domenę nadawcy w Resend** (rekordy DKIM/SPF w DNS). Bez tego Resend
+   dostarcza maile **wyłącznie na adres właściciela konta** — uczestnicy ich nie dostaną.
+4. Ustaw sekret `MAIL_FROM`, np. `Rooms <rooms@twojadomena.pl>`.
+
+Do czasu wykonania kroków 3-4 dashboard pokazuje żółtą notkę ostrzegawczą
+(`organizer.emailsSetupTodo`) — usuń ją, gdy konfiguracja będzie kompletna.
+Limity free: Resend 100 maili/dobę (40-osobowy wyjazd ≈ 2 blasty dziennie z zapasem).
+
+### 8.2. Bezpieczeństwo i prywatność (do decyzji produktowej)
+- **Dashboard organizatora jest publicznie czytelny** — bez kodu widać obłożenie,
+  kto w którym pokoju, płcie i niespełnione reguły. Kod chroni tylko zapisy.
+  Do rozstrzygnięcia: czy to świadomy „read-only", czy wyciek do zamknięcia (RLS).
+- **Lista wszystkich wyjazdów widoczna dla każdego** w pickerze (brak scopingu).
+- Brak informacji o przetwarzaniu danych przy zbieraniu imienia/e-maila/płci.
+
+### 8.3. Tożsamość uczestnika
+- Tożsamość żyje wyłącznie w `localStorage` → brak ciągłości między urządzeniami;
+  wejście z drugiego urządzenia tworzy duplikat uczestnika (brak deduplikacji).
+- **Dwa niepowiązane systemy tożsamości**: konto Supabase Auth (faza 10) i uczestnik
+  wyjazdu. Docelowo do spięcia — `DIRECTION.md`.
+- **Brak edycji profilu po rejestracji** → ślepy zaułek: reguła „ta sama płeć" wymaga
+  ustawionej płci, a komunikat odsyła „powyżej", gdzie nic nie ma. Jedyne wyjście to
+  „To nie Ty?" (kasuje tożsamość bez potwierdzenia).
+
+### 8.4. UX — braki stanów i drobne usterki
+- Brak obsługi **błędu pobierania danych** w `useTripData` (awaria sieci = wieczne
+  „Ładowanie…" albo ciche odesłanie do pickera). Brak stanów ładowania w pickerze.
+- Brak potwierdzenia sukcesu po dołączeniu/wypisaniu (tylko cicha zmiana listy).
+- `ProposalsBar`: jedno `busy` blokuje **wszystkie** przyciski — nie odpowiesz na
+  drugą propozycję, póki trwa pierwsza.
+- Brak stanów pustych: brak pokojów, brak kandydatów do prośby/zamiany/zaproszenia.
+- Tylko **jedna** preferowana osoba na uczestnika (model i UI); brak „albo A, albo B".
+- Baner błędu nad listą pokojów bywa poza ekranem po przewinięciu.
+- Znacznik „ma organizatora" używa klasy `tag--gender` (semantycznie nie ta klasa).
+
+### 8.5. Dostępność
+- Status pokoju niesiony **samym kolorem** (kropka `aria-hidden`, ramka kolorem).
+- Brak `aria-live` dla zmian realtime i banerów błędów.
+- Brak `fieldset`/`legend` w wyborze twardości reguły; brak stylów `:focus-visible`.
+
+### 8.6. Wydajność i architektura
+- **Solver liczy się synchronicznie w wątku UI** — przy ~50 osobach może zamrozić
+  interfejs (brak web workera, progresu i anulowania).
+- **Nieświeże wyniki solvera**: po zmianie realtime propozycje zostają na ekranie;
+  ratuje to dopiero serwerowy `ASSIGNMENT_SET_MISMATCH`. Brak unieważniania.
+- Brak „Zastosuj" dla **pojedynczej** propozycji (string `apply` istnieje, nieużywany).
+- `useTripData` przy **każdej** zmianie przeładowuje komplet danych (5 zapytań).
+- `optimize.ts` nie jest używany w UI (żywy tylko w testach) — udokumentować rolę
+  albo usunąć; jego stała `CRITICAL_WEIGHT = 1000` jest mniej odporna niż dynamiczne
+  `W` solvera (teoretycznie łamie się przy >999 preferencjach).
+- `anneal` nie zapamiętuje najlepszego stanu **w trakcie** przebiegu (tylko po
+  polish) — drobna strata jakości. `costOf` alokuje tablicę przy każdym wywołaniu.
+- Brak trybu ciemnego (kolory na sztywno).
+
+### 8.7. Kolejne kroki produktowe (`DIRECTION.md`)
+- **Pełne konta użytkowników / per-user auth** — spięcie kont z uczestnikami.
+- Eksport listy pokojów (CSV/PDF) dla recepcji, powiadomienia push.
+- Bogatsze reguły (chrapanie, cisza/impreza, czarne listy), grupy znajomych.
+- Symulacja „co jeśli" i scoring jakości przydziału przed zastosowaniem.

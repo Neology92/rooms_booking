@@ -323,6 +323,10 @@ export function OrganizerDashboard({
           )}
           <h2>{t.emails}</h2>
           <p className="muted">{t.emailsIntro}</p>
+          {/* Mail setup is deliberately unfinished (see CLAUDE.md TODO): without a
+              verified sender domain Resend only delivers to the account owner. Say
+              so in the UI so nobody assumes participants were reached. */}
+          <p className="banner banner--locked">{t.emailsSetupTodo}</p>
           {mailResult && <p className="banner banner--ok">{mailResult}</p>}
           <button
             disabled={busy}

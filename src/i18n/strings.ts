@@ -114,6 +114,8 @@ export const en = {
     emails: "Email participants",
     emailsIntro:
       "Send everyone who left an e-mail address their current room assignment.",
+    emailsSetupTodo:
+      "Setup unfinished: until a sender domain is verified, mail only reaches the mailbox that owns the mail account — participants will NOT get it. Test the button freely, but ask the app's admin to finish the mail setup before relying on it.",
     emailsSend: "Send room details",
     emailsConfirm: (n: number) => `Send ${n} e-mail${n === 1 ? "" : "s"} now?`,
     emailsResult: (sent: number, skipped: number) =>
@@ -352,6 +354,8 @@ export const pl: Strings = {
     emails: "Maile do uczestników",
     emailsIntro:
       "Wyślij każdemu, kto podał adres e-mail, jego aktualny przydział pokoju.",
+    emailsSetupTodo:
+      "Konfiguracja niedokończona: dopóki domena nadawcy nie jest zweryfikowana, maile trafiają wyłącznie na skrzynkę właściciela konta pocztowego — uczestnicy ich NIE dostaną. Przycisk możesz testować, ale zanim na tym polegniesz, poproś administratora aplikacji o dokończenie konfiguracji poczty.",
     emailsSend: "Wyślij przydziały pokojów",
     emailsConfirm: (n: number) =>
       `Wysłać teraz ${n} ${n === 1 ? "mail" : "maili"}?`,
