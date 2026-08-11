@@ -22,10 +22,11 @@ do `NEEDS.md` (krytyczne) lub `DIRECTION.md` (dodatki). Szczegóły: [`INDEX.md 
 ---
 
 ## 1. Status i charakter projektu
-- Faza: **założenia / start**. Stack nie jest jeszcze zaimplementowany.
-- Charakter: aplikacja **webowa**, responsywna (uczestnik najczęściej na telefonie,
-  organizator na desktopie).
-- Sekcje oznaczone *(propozycja)* wymagają potwierdzenia przez autora przed wdrożeniem.
+- Faza: **działająca aplikacja** — stack wdrożony, wszystkie wymagania krytyczne
+  z `NEEDS.md` zrealizowane. Historia wdrożeń: §7. Co zostało: §8 (dług techniczny).
+- Charakter: aplikacja **webowa**, responsywna i mobile-first (uczestnik najczęściej
+  na telefonie, organizator na desktopie), instalowalna jako PWA.
+- Jedyna niedokończona rzecz blokująca użycie: **konfiguracja poczty** (§8.1).
 
 ---
 
@@ -44,16 +45,21 @@ Architektura **musi** obsłużyć:
 
 ---
 
-## 3. Model domenowy (szkic)
-Encje (nazwy robocze):
-- **Trip (Wyjazd)** — `id`, `name`, `target_headcount`, `signups_locked` (bool).
+## 3. Model domenowy (stan wdrożony)
+Odwzorowanie 1:1 w `src/types/domain.ts`; definicje w `supabase/migrations/`:
+- **Trip (Wyjazd)** — `id`, `name`, `target_headcount`, `signups_locked` (bool),
+  `organizer_passcode_hash` (bcrypt, **nigdy nie trafia do klienta**), `organizer_claimed`.
 - **Room (Pokój)** — `id`, `trip_id`, `name`, `capacity`, `info` (np. kod/lokalizacja).
 - **Participant (Uczestnik)** — `id`, `trip_id`, `name`, `email`, `gender`.
 - **Assignment (Przypisanie)** — `id`, `trip_id`, `participant_id` **(UNIQUE — jeden pokój
   na osobę)**, `room_id`. Brak rekordu = niezapisany.
-- **Rule (Reguła)** — `id`, `participant_id`, `type` (`same_gender` | `preferred_person` | …),
+- **Rule (Reguła)** — `id`, `participant_id`, `type` (`same_gender` | `preferred_person`),
   `strictness` (`must_have` | `preference`), `target_participant_id?`.
-- *(opcjonalnie, DIRECTION)* **PreferenceRequest** — `from`, `to`, `status`.
+- **PairingRequest (Prośba)** — `id`, `trip_id`, `from_participant_id`, `to_participant_id`,
+  `kind` (`pair` | `swap` | `invite`), `status` (`pending` | `accepted` | `declined` |
+  `withdrawn` | `ended` | `completed`). Uwaga na semantykę statusu: **tylko `accepted`**
+  (zawsze `kind='pair'`) daje syntetyczne miękkie preferencje w `effectiveRules`;
+  wykonana zamiana/zaproszenie kończy się `completed` i **nie** zostawia preferencji.
 
 Invarianty egzekwowane na poziomie danych/serwera — patrz `NEEDS.md §10`.
 
@@ -71,8 +77,11 @@ spełnienia innych wymagań krytycznych.
   egzekwowania invariantów (`NEEDS §10`).
 - **Egzekwowanie limitu/locka:** w transakcji DB lub funkcji serwerowej (RPC),
   **nigdy** wyłącznie w kliencie.
-- **Optymalizacja (`NEEDS §9`):** start od prostej heurystyki wykrywania naruszeń
-  i propozycji zamian; docelowo ew. solver (patrz `DIRECTION.md §3`).
+- **Poczta:** **Resend** (Free, 100 maili/dobę) wywoływany z Supabase Edge Function —
+  klucz API żyje wyłącznie w sekretach funkcji, nigdy w kliencie.
+- **Optymalizacja (`NEEDS §9`):** zrealizowana solverem (`src/lib/solve.ts` — symulowane
+  wyżarzanie); wcześniejsza heurystyka swap-only została w `optimize.ts` jako punkt
+  odniesienia w testach.
 
 ### 4.1. Limity darmowych planów (świadomość kosztów)
 Dla aplikacji na wyjazd grupowy darmowe plany wystarczają z dużym zapasem. Pilnuj:
@@ -90,9 +99,10 @@ Dla aplikacji na wyjazd grupowy darmowe plany wystarczają z dużym zapasem. Pil
 ---
 
 ## 5. Konwencje (do uzupełniania w miarę rozwoju)
-- **Język:** **UI aplikacji po angielsku** (MUST HAVE — `NEEDS §12`); polski w UI to
-  przyszły dodatek (`DIRECTION.md`). Dokumentacja założeń po polsku; nazwy w kodzie po angielsku.
-  Teksty UI trzymaj w jednym miejscu (np. słownik i18n), by późniejszy PL był łatwy.
+- **Język:** **UI domyślnie po angielsku** (MUST HAVE — `NEEDS §12`); polski jest
+  dostępny jako przełączalny słownik. Dokumentacja założeń po polsku; nazwy w kodzie
+  po angielsku. **Każdy** tekst UI idzie do `src/i18n/strings.ts` — `pl` jest typowany
+  jako `Strings`, więc brak tłumaczenia wywala typecheck.
 - **Walidacja invariantów:** zawsze po stronie serwera; UI tylko wspiera UX.
 - **Sygnalizacja w dashboardzie:** kolor wprost odwzorowuje stan
   (np. zielony=komplet/OK, żółty=w toku, czerwony=naruszony MUST HAVE / przekroczenie).
@@ -105,19 +115,26 @@ Dla aplikacji na wyjazd grupowy darmowe plany wystarczają z dużym zapasem. Pil
 ---
 
 ## 6. Komendy projektu
-- `npm install` — instalacja zależności.
-- `npm run dev` — lokalny serwer deweloperski (Vite).
-- `npm run build` — typecheck + build produkcyjny do `dist/`.
-- `npm run typecheck` — sama kontrola typów.
-- `npm run lint` — ESLint.
-- `npm test` — testy jednostkowe (Vitest).
+Źródłem prawdy jest `package.json`; w skrócie:
+`npm install` · `npm run dev` · `npm run build` (typecheck + `dist/`) ·
+`npm run typecheck` · `npm run lint` · `npm test` (Vitest) ·
+`npm run test:integration` (przeciw realnej bazie — wymaga `VITE_SUPABASE_*`,
+bez nich testy czysto się pomijają).
 
-Baza: w panelu Supabase uruchom `supabase/migrations/0001_init.sql`
-(i opcjonalnie `supabase/seed.sql`). Konfiguracja połączenia: `.env` wg `.env.example`.
-Setup i deploy: patrz `README.md`.
+Baza: w panelu Supabase uruchom **wszystkie** migracje z `supabase/migrations/`
+**po kolei** (`0001` → `0014`), opcjonalnie `supabase/seed.sql`.
+Konfiguracja połączenia: `.env` wg `.env.example`.
 
-## 7. Stan implementacji (MVP) i kolejne kroki
-Zrobione: lista pokojów + obłożenie na żywo, atomowy zapis/przepisanie/wypisanie
+**Pełna instrukcja setupu, konfiguracji poczty i deployu żyje w [`README.md`](./README.md)
+— nie duplikuj jej tutaj.**
+
+## 7. Historia wdrożeń (chronologicznie)
+> **To jedyne miejsce, gdzie opisujemy „co już zrobiono".** README podaje krótkie
+> streszczenie dla użytkownika i linkuje tutaj; `NEEDS.md` mówi tylko *czy* wymaganie
+> jest spełnione (checkboxy). Nie duplikuj tej listy w innych plikach.
+> Kolejne fazy dopisuj **na końcu**; rzeczy do zrobienia → §8.
+
+MVP: lista pokojów + obłożenie na żywo, atomowy zapis/przepisanie/wypisanie
 (bez dublowania, odporne na wyścig o ostatnie miejsce), lock egzekwowany po stronie
 serwera, dashboard organizatora (liczniki, status kolorem, sygnalizacja MUST HAVE vs
 preferencja).
@@ -221,17 +238,15 @@ błędów `MAIL_NOT_CONFIGURED`/`SEND_FAILED`/`NOT_ORGANIZER`).
 ## 8. TODO — dług techniczny i niedokończone
 
 ### 8.1. ⚠️ Maile: konfiguracja niedokończona (BLOKUJE realne użycie)
-Kod i UI gotowe, wdrożone. **Brakuje konfiguracji po stronie usług** — do zrobienia
-przez administratora aplikacji (właściciela konta Supabase/Resend):
-1. Załóż konto na resend.com, wygeneruj klucz API.
-2. Supabase → Edge Functions → Secrets: dodaj `RESEND_API_KEY`.
-3. **Zweryfikuj domenę nadawcy w Resend** (rekordy DKIM/SPF w DNS). Bez tego Resend
-   dostarcza maile **wyłącznie na adres właściciela konta** — uczestnicy ich nie dostaną.
-4. Ustaw sekret `MAIL_FROM`, np. `Rooms <rooms@twojadomena.pl>`.
+Kod, UI i Edge Function są gotowe i wdrożone. **Brakuje konfiguracji po stronie usług**
+(klucz API Resend + weryfikacja domeny nadawcy) — do zrobienia przez administratora
+aplikacji. Bez tego Resend dostarcza maile **wyłącznie na adres właściciela konta**,
+więc uczestnicy ich nie dostaną.
 
-Do czasu wykonania kroków 3-4 dashboard pokazuje żółtą notkę ostrzegawczą
-(`organizer.emailsSetupTodo`) — usuń ją, gdy konfiguracja będzie kompletna.
-Limity free: Resend 100 maili/dobę (40-osobowy wyjazd ≈ 2 blasty dziennie z zapasem).
+→ **Instrukcja krok po kroku: [`README.md`](./README.md), sekcja „Email to participants".**
+
+Po dokończeniu konfiguracji usuń żółtą notkę ostrzegawczą z dashboardu
+(string `organizer.emailsSetupTodo` + jego render w `OrganizerDashboard.tsx`).
 
 ### 8.2. Bezpieczeństwo i prywatność (do decyzji produktowej)
 - **Dashboard organizatora jest publicznie czytelny** — bez kodu widać obłożenie,
@@ -270,11 +285,13 @@ Limity free: Resend 100 maili/dobę (40-osobowy wyjazd ≈ 2 blasty dziennie z z
   interfejs (brak web workera, progresu i anulowania).
 - **Nieświeże wyniki solvera**: po zmianie realtime propozycje zostają na ekranie;
   ratuje to dopiero serwerowy `ASSIGNMENT_SET_MISMATCH`. Brak unieważniania.
-- Brak „Zastosuj" dla **pojedynczej** propozycji (string `apply` istnieje, nieużywany).
+- Brak „Zastosuj" dla **pojedynczej** propozycji — działa tylko „Zastosuj wszystko".
 - `useTripData` przy **każdej** zmianie przeładowuje komplet danych (5 zapytań).
-- `optimize.ts` nie jest używany w UI (żywy tylko w testach) — udokumentować rolę
-  albo usunąć; jego stała `CRITICAL_WEIGHT = 1000` jest mniej odporna niż dynamiczne
-  `W` solvera (teoretycznie łamie się przy >999 preferencjach).
+- `optimize.ts` nie jest używany w UI — rola udokumentowana w nagłówku pliku
+  (baseline regresyjny dla solvera). Do usunięcia, gdyby przestał być potrzebny;
+  wtedy przenieś typ `Severity`, bo importuje go `solve.ts`. Jego stała
+  `CRITICAL_WEIGHT = 1000` jest mniej odporna niż dynamiczne `W` solvera
+  (teoretycznie łamie się przy >999 preferencjach).
 - `anneal` nie zapamiętuje najlepszego stanu **w trakcie** przebiegu (tylko po
   polish) — drobna strata jakości. `costOf` alokuje tablicę przy każdym wywołaniu.
 - Brak trybu ciemnego (kolory na sztywno).

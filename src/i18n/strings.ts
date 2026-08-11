@@ -103,7 +103,6 @@ export const en = {
     swapWith: (aName: string, aRoom: string, bName: string, bRoom: string) =>
       `Swap ${aName} (${aRoom}) ↔ ${bName} (${bRoom})`,
     moveTo: (name: string, room: string) => `Move ${name} → ${room}`,
-    apply: "Apply",
     applyAll: "Apply all",
     dangerZone: "Danger zone",
     deleteTrip: "Delete trip",
@@ -343,7 +342,6 @@ export const pl: Strings = {
     swapWith: (aName: string, aRoom: string, bName: string, bRoom: string) =>
       `Zamień ${aName} (${aRoom}) ↔ ${bName} (${bRoom})`,
     moveTo: (name: string, room: string) => `Przenieś ${name} → ${room}`,
-    apply: "Zastosuj",
     applyAll: "Zastosuj wszystko",
     dangerZone: "Strefa niebezpieczna",
     deleteTrip: "Usuń wyjazd",

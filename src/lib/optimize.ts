@@ -1,14 +1,26 @@
 import type { Assignment, Participant, Rule } from "../types/domain";
 import { splitBySeverity, unmetRules } from "./rules";
 
-// On-demand optimization (NEEDS §9). Pure + deterministic, so it's unit-testable
-// and runs entirely client-side (no DB, no cost). It proposes room *swaps*
-// between two assigned participants — swaps keep every room's occupancy count
-// unchanged, so capacity limits (invariant §10.2) can never be broken.
+// On-demand optimization (NEEDS §9) — the ORIGINAL swap-only heuristic.
+//
+// STATUS: superseded by `solve.ts` and NOT wired into the UI. It is kept
+// deliberately, for two reasons:
+//   1. `solve.test.ts` uses it to prove the solver earns its complexity — a
+//      MUST-HAVE fixable only by moving someone into an empty room is
+//      unreachable by swaps alone, so this module is the regression baseline.
+//   2. It documents the cheaper approach if the solver ever needs replacing.
+// Before deleting it, move the `Severity` type (solve.ts imports it) elsewhere.
+// Tracked in CLAUDE.md §8.6.
+//
+// Pure + deterministic, so it's unit-testable and runs entirely client-side (no
+// DB, no cost). It proposes room *swaps* between two assigned participants —
+// swaps keep every room's occupancy count unchanged, so capacity limits
+// (invariant §10.2) can never be broken.
 //
 // Priority is encoded in the cost function: an unmet MUST-HAVE weighs far more
 // than an unmet preference, so the greedy search fixes criticals first and only
-// then chases preferences.
+// then chases preferences. Note `solve.ts` uses a *dynamic* weight instead —
+// this fixed 1000 is the less robust of the two (see CLAUDE.md §8.6).
 
 const CRITICAL_WEIGHT = 1000;
 

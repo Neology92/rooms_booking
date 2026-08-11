@@ -15,6 +15,22 @@ i ma być pierwszym przystankiem przy orientacji w repozytorium.
 | [`CLAUDE.md`](./CLAUDE.md) | Założenia **techniczne**: architektura, stack, konwencje, invarianty. | Wiążące — utrzymywane |
 | [`INDEX.md`](./INDEX.md) | Ten plik — mapa repo + zasady pracy. | Pomocnicze |
 
+### 1.1. Gdzie co żyje (jedno źródło prawdy)
+Każda informacja ma **jedno** miejsce. Reszta plików **linkuje**, nie kopiuje —
+inaczej wersje się rozjeżdżają i nie wiadomo, której wierzyć.
+
+| Informacja | Jedyne źródło |
+|------------|---------------|
+| Czy wymaganie krytyczne jest spełnione | `NEEDS.md` (checkboxy) |
+| Co już zbudowano, faza po fazie | `CLAUDE.md §7` |
+| Co zostało do zrobienia / dług techniczny | `CLAUDE.md §8` |
+| Pomysły „na potem” i ich status | `DIRECTION.md` |
+| Architektura, invarianty, konwencje | `CLAUDE.md §2–§5` |
+| Setup, konfiguracja poczty, deploy | `README.md` |
+| Komendy (`npm run …`) | `package.json` (dokumenty tylko streszczają) |
+| Mapa plików i katalogów | `INDEX.md §3` (ten plik) |
+| Cały tekst UI | `src/i18n/strings.ts` |
+
 ---
 
 ## 2. Jak korzystać z `NEEDS.md` (zasada pracy — obowiązuje też Claude'a)
@@ -48,48 +64,72 @@ Przy **każdym** zadaniu (planowanie, kod, refaktor, decyzja projektowa):
 
 ```
 rooms_booking/
-├── CLAUDE.md            # założenia techniczne + zasady dla asystenta
-├── NEEDS.md             # wymagania krytyczne
-├── DIRECTION.md         # wizja i dodatki
-├── INDEX.md             # ten plik — mapa + zasady pracy
-├── README.md            # setup i deploy (Supabase + Netlify, free)
-├── package.json         # zależności i skrypty (dev/build/lint/test)
-├── netlify.toml         # konfiguracja hostingu Netlify (free)
+├── CLAUDE.md / NEEDS.md / DIRECTION.md / INDEX.md   # dokumenty założeń (tabela §1)
+├── README.md            # setup, konfiguracja poczty i deploy (Supabase + Netlify)
+├── package.json         # zależności i skrypty — ŹRÓDŁO PRAWDY dla komend
+├── netlify.toml         # hosting Netlify (free)
 ├── .env.example         # wzór zmiennych środowiskowych Supabase
 ├── supabase/
-│   ├── migrations/
-│   │   └── 0001_init.sql # schemat + invarianty + RPC (atomowość, lock) + RLS + realtime
-│   └── seed.sql          # dane demo do testów
+│   ├── migrations/      # 0001…0014, uruchamiane po kolei (opis niżej)
+│   ├── functions/
+│   │   └── send-room-emails/  # Edge Function: mailing przydziałów (Resend)
+│   └── seed.sql         # dane demo do testów
 ├── src/
-│   ├── main.tsx          # bootstrap React
-│   ├── App.tsx           # layout + zakładki: uczestnik / organizator
-│   ├── i18n/strings.ts   # CAŁY tekst UI (angielski; PL jako przyszły słownik)
-│   ├── types/domain.ts   # typy domenowe (lustro schematu DB)
-│   ├── lib/supabase.ts   # klient Supabase (czyta .env)
-│   ├── lib/actions.ts    # wywołania RPC (join/leave/lock) + mapowanie błędów
-│   ├── lib/rules.ts      # czysta ocena reguł MUST HAVE vs preferencja + status koloru
-│   ├── lib/rules.test.ts # testy jednostkowe logiki reguł (Vitest)
-│   ├── hooks/useTripData.ts     # ładowanie danych + subskrypcja realtime
-│   ├── pages/ParticipantView.tsx    # widok uczestnika (zapis/wypis/przepis)
-│   └── pages/OrganizerDashboard.tsx # dashboard: liczniki, kolor, lock, naruszenia
+│   ├── main.tsx / App.tsx     # bootstrap + layout, zakładki uczestnik/organizator
+│   ├── i18n/                  # strings.ts (CAŁY tekst UI, EN+PL) + I18nProvider
+│   ├── types/domain.ts        # typy domenowe (lustro schematu DB)
+│   ├── auth/AuthProvider.tsx  # sesja Supabase Auth (konta, faza 10)
+│   ├── lib/
+│   │   ├── supabase.ts        # klient Supabase (czyta .env)
+│   │   ├── auth.ts            # logowanie/rejestracja/reset hasła
+│   │   ├── actions.ts         # WSZYSTKIE wywołania RPC + mapowanie błędów na i18n
+│   │   ├── rules.ts           # ocena reguł MUST HAVE vs preferencja + status koloru
+│   │   ├── solve.ts           # solver (symulowane wyżarzanie) — używany w UI
+│   │   ├── optimize.ts        # starsza heurystyka swap-only (patrz uwaga niżej)
+│   │   └── *.test.ts          # jednostkowe; *.integration.test.ts — przeciw realnej bazie
+│   ├── hooks/                 # useTripData (dane+realtime), useIdentity, useOrganizer, useTripId
+│   ├── components/            # Onboarding, TripPicker, RoomsEditor, RulesEditor,
+│   │                          # PairingsPanel, ProposalsBar, OrganizerAuth, AuthLanding
+│   └── pages/                 # ParticipantView, OrganizerDashboard
 └── .claude/             # hook SessionStart (instalacja zależności w sesjach web)
 ```
 
+### Migracje — co wnosi która
+`0001` schemat + invarianty + `join_room`/`leave_room` + RLS + realtime ·
+`0002` onboarding uczestnika · `0003` reguły · `0004` korekty organizatora ·
+`0005` autoryzacja organizatora (bcrypt) · `0006` `admin_swap` ·
+`0007` tworzenie wyjazdu i pokojów · `0008` fix `search_path` pgcrypto ·
+`0009` usuwanie wyjazdu · `0010` `pairing_requests` · `0011` `admin_set_assignments` ·
+`0012` fundament kont · `0013` propozycje zamiany · `0014` zaproszenia do pokoju.
+
 ### Kluczowe obszary kodu i ich funkcje
 - **Model domenowy** (`src/types/domain.ts`, `supabase/migrations`) — Wyjazd, Pokój,
-  Uczestnik, Przypisanie, Reguła (preferencja/MUST HAVE).
-- **Logika zapisów** (`supabase/migrations/0001_init.sql` → `join_room`/`leave_room`) —
-  atomowy zapis/przepisanie/wypisanie z gwarancją invariantów, odporny na wyścig
-  (blokada wiersza pokoju + `UNIQUE`) — `NEEDS.md §10`.
+  Uczestnik, Przypisanie, Reguła, Prośba (`pairing_requests`: pair/swap/invite).
+- **Logika zapisów** (`0001` → `join_room`/`leave_room`) — atomowy zapis/przepisanie/
+  wypisanie, odporne na wyścig (blokada wiersza + `UNIQUE`) — `NEEDS.md §10`.
 - **Realtime** (`src/hooks/useTripData.ts`) — podgląd na żywo obłożenia pokojów.
-- **Silnik reguł** (`src/lib/rules.ts`) — wykrywanie naruszeń MUST HAVE (krytyczne)
-  vs niespełnionych preferencji (informacyjne). Optymalizacja na żądanie (`NEEDS.md §9`)
-  — jeszcze niezaimplementowana (kolejny krok).
+- **Silnik reguł** (`src/lib/rules.ts`) — naruszenia MUST HAVE (krytyczne) vs
+  niespełnione preferencje; `effectiveRules` dokłada syntetyczne miękkie preferencje
+  z zaakceptowanych par.
+- **Optymalizacja** (`NEEDS.md §9`) — `src/lib/solve.ts` (solver używany w UI).
+  `optimize.ts` to wcześniejsza heurystyka swap-only: **nieużywana w UI**, trzymana
+  jako punkt odniesienia w testach (dowodzi, że sama zamiana nie rozwiąże MUST-HAVE
+  wymagającego wolnego łóżka) — patrz `CLAUDE.md §8.6`.
 - **Dashboard organizatora** (`src/pages/OrganizerDashboard.tsx`) — liczniki,
-  sygnalizacja kolorem, lock. Ręczne korekty — kolejny krok.
+  sygnalizacja kolorem, lock, ręczne korekty, solver, mailing.
+
+> Stan wdrożeń i dług techniczny **nie są duplikowane w tym pliku** —
+> żyją w [`CLAUDE.md §7`](./CLAUDE.md) (co zrobiono) i [`CLAUDE.md §8`](./CLAUDE.md) (co zostało).
 
 ---
 
 ## 4. Konwencja statusu zadań
 W `NEEDS.md` checkboxy `- [ ]` / `- [x]` oznaczają stan realizacji wymagań.
 Zaznaczaj `- [x]` dopiero, gdy dana potrzeba jest **zaimplementowana i działa**.
+Obecnie **wszystkie** wymagania krytyczne są odhaczone — nowe wymaganie dopisuj
+jako `- [ ]` i odhaczaj przy wdrożeniu.
+
+W `DIRECTION.md`: ✅ zrobione · 🔧 zrobione, wymaga dokończenia · bez znacznika = pomysł.
+
+Rzeczy **do zrobienia w kodzie** (bugi, dług, braki) nie żyją w komentarzach `TODO:`
+rozsianych po plikach, tylko w `CLAUDE.md §8` — jednej liście z podziałem na kategorie.

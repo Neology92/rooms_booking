@@ -82,6 +82,7 @@ on-demand optimization plus a simulated-annealing solver, negotiated roommate
 requests, participant-initiated room swaps and room invitations, PWA, and an
 English/Polish UI.
 
-Known gaps and technical debt are tracked in [`CLAUDE.md`](./CLAUDE.md) §8 —
+Phase-by-phase implementation history lives in [`CLAUDE.md`](./CLAUDE.md) §7 (the
+single source for "what's been built"); known gaps and technical debt are in §8 —
 including the mail setup above, participant identity limits (localStorage only),
 the publicly readable organizer dashboard, and accessibility work.

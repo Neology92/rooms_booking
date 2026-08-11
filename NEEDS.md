@@ -4,6 +4,11 @@
 > Wszystko, co tu zapisane, **musi zostać uwzględnione, zrealizowane i utrzymane**.
 > Pomysły „fajne, ale niekonieczne” mieszkają w [`DIRECTION.md`](./DIRECTION.md).
 > Jak korzystać z tego pliku w codziennej pracy → patrz [`INDEX.md`](./INDEX.md).
+>
+> **Stan realizacji:** wszystkie wymagania krytyczne są zaimplementowane i działają
+> (checkboxy poniżej — konwencja: [`INDEX.md §4`](./INDEX.md)). Ten plik mówi **co**
+> jest wymagane; **jak** to zrobiono i co zostało do dopracowania → [`CLAUDE.md §7`](./CLAUDE.md)
+> (historia wdrożeń) i [`CLAUDE.md §8`](./CLAUDE.md) (dług techniczny).
 
 ---
 
@@ -23,31 +28,31 @@ jest chaotyczne, podatne na dublowanie i trudne do kontrolowania w czasie rzeczy
 ---
 
 ## 3. Zarządzanie pokojami (Organizator)
-- [ ] Organizator wprowadza **listę pokojów**, do których można się zapisywać.
-- [ ] Każdy pokój ma **liczbę miejsc (limit)**.
-- [ ] Organizator może ustawić **docelową liczbę uczestników** całego wyjazdu
+- [x] Organizator wprowadza **listę pokojów**, do których można się zapisywać.
+- [x] Każdy pokój ma **liczbę miejsc (limit)**.
+- [x] Organizator może ustawić **docelową liczbę uczestników** całego wyjazdu
       (do informacji „czy wszyscy już się zapisali”).
-- [ ] Organizator może **ręcznie zablokować zapisy (lock)** — zamrożenie aktualnego
+- [x] Organizator może **ręcznie zablokować zapisy (lock)** — zamrożenie aktualnego
       stanu, po którym uczestnicy nie mogą już zmieniać przypisań.
 
 ## 4. Zapisy uczestników
-- [ ] Uczestnik zapisuje się do pokoju **przez aplikację**.
-- [ ] **Podgląd na żywo**: ile osób i **kto konkretnie** jest w danym pokoju.
-- [ ] Gdy pokój jest **pełny (limit osiągnięty)** — **nie można dołączyć ponad limit**.
-- [ ] Uczestnik może się **wypisać** z pokoju.
-- [ ] Uczestnik może się **przepisać** z jednego pokoju do drugiego.
-- [ ] **Brak dublowania zapisów:** zapis do nowego pokoju **automatycznie wypisuje**
+- [x] Uczestnik zapisuje się do pokoju **przez aplikację**.
+- [x] **Podgląd na żywo**: ile osób i **kto konkretnie** jest w danym pokoju.
+- [x] Gdy pokój jest **pełny (limit osiągnięty)** — **nie można dołączyć ponad limit**.
+- [x] Uczestnik może się **wypisać** z pokoju.
+- [x] Uczestnik może się **przepisać** z jednego pokoju do drugiego.
+- [x] **Brak dublowania zapisów:** zapis do nowego pokoju **automatycznie wypisuje**
       uczestnika z poprzedniego. Uczestnik może być **maks. w jednym pokoju naraz**.
 
 ## 5. Dashboard organizatora
-- [ ] Podgląd **ilu uczestników się zapisało** (łącznie i per pokój).
-- [ ] **Sygnał sensoryczny (np. kolor)** informujący, czy osiągnięto docelową liczbę
+- [x] Podgląd **ilu uczestników się zapisało** (łącznie i per pokój).
+- [x] **Sygnał sensoryczny (np. kolor)** informujący, czy osiągnięto docelową liczbę
       zapisanych (np. zielony = komplet, żółty = w toku, czerwony = problem).
-- [ ] Podgląd **kto dokładnie jest w jakim pokoju**.
-- [ ] Możliwość **ręcznych zmian** przypisań przez organizatora (override).
+- [x] Podgląd **kto dokładnie jest w jakim pokoju**.
+- [x] Możliwość **ręcznych zmian** przypisań przez organizatora (override).
 
 ## 6. Dane kontaktowe
-- [ ] Przechowywanie **adresów e-mail uczestników** (na potrzeby komunikacji,
+- [x] Przechowywanie **adresów e-mail uczestników** (na potrzeby komunikacji,
       np. rozsyłki kodów do pokojów / lokalizacji).
       *Samo automatyczne rozsyłanie maili — patrz `DIRECTION.md`.*
 
@@ -61,26 +66,26 @@ Każda reguła uczestnika jest jednego z dwóch typów:
   nie problem krytyczny**.
 
 Wymagane reguły / preferencje (każda może być MUST HAVE **lub** preferencją):
-- [ ] **Płeć współlokatorów** (np. „chcę być w pokoju z osobami tej samej płci”).
-- [ ] **Preferowane osoby** — z kim uczestnik chce być w pokoju.
-- [ ] Wprowadzanie wzajemnych preferencji **ręcznie** (obie strony wpisują siebie).
+- [x] **Płeć współlokatorów** (np. „chcę być w pokoju z osobami tej samej płci”).
+- [x] **Preferowane osoby** — z kim uczestnik chce być w pokoju.
+- [x] Wprowadzanie wzajemnych preferencji **ręcznie** (obie strony wpisują siebie).
 
 ### 7.1. UX wokół rozróżnienia
-- [ ] Interfejs **aktywnie sugeruje**, by oznaczać **MUST HAVE tylko gdy jest to naprawdę
+- [x] Interfejs **aktywnie sugeruje**, by oznaczać **MUST HAVE tylko gdy jest to naprawdę
       konieczne**, a nie z „widzimisię”. Domyślnie reguła jest preferencją.
 
 ## 8. Kontrola spełnienia reguł (Dashboard organizatora)
-- [ ] Dla każdego pokoju / osoby widać, **które reguły są spełnione, a które nie**.
-- [ ] **Naruszone MUST HAVE** są wyróżnione jako **krytyczne** (czerwone).
+- [x] Dla każdego pokoju / osoby widać, **które reguły są spełnione, a które nie**.
+- [x] **Naruszone MUST HAVE** są wyróżnione jako **krytyczne** (czerwone).
       Przykład: osoba oznaczyła „tylko ta sama płeć”, a jest w pokoju z inną płcią.
-- [ ] **Niespełnione preferencje** są widoczne, ale oznaczone jako niekrytyczne.
+- [x] **Niespełnione preferencje** są widoczne, ale oznaczone jako niekrytyczne.
 
 ## 9. Optymalizacja przydziału (na żądanie organizatora)
-- [ ] Organizator może **zlecić automatyczne przeliczenie** przydziałów.
-- [ ] Algorytm działa **priorytetowo**:
+- [x] Organizator może **zlecić automatyczne przeliczenie** przydziałów.
+- [x] Algorytm działa **priorytetowo**:
   1. **Najpierw** rozwiązuje **problemy krytyczne (MUST HAVE)**.
   2. **Następnie** maksymalizuje spełnienie **preferencji**.
-- [ ] Wynik prezentowany jako **propozycje zamian** między uczestnikami
+- [x] Wynik prezentowany jako **propozycje zamian** między uczestnikami
       (np. „zamień osobę Z i O miejscami”), z poszanowaniem limitów pokojów.
 
 > **Przykład (z założeń autora):**
@@ -106,19 +111,19 @@ Te zasady muszą być prawdziwe **zawsze**, niezależnie od ścieżki w aplikacj
 ---
 
 ## 11. Budżet — ZERO kosztów (wymaganie twarde)
-- [ ] Aplikacja działa w pełni **w ramach darmowych planów (100% free)** — hosting,
+- [x] Aplikacja działa w pełni **w ramach darmowych planów (100% free)** — hosting,
       baza, auth, realtime, domena. **Brak kosztów** to wymaganie krytyczne, nie preferencja.
-- [ ] Architektura i decyzje techniczne **nie mogą wymuszać płatnego planu**, by
+- [x] Architektura i decyzje techniczne **nie mogą wymuszać płatnego planu**, by
       spełnić wymagania z tego dokumentu. Jeśli funkcja wymagałaby płatnego planu —
       **zgłoś to wprost** i potraktuj jako naruszenie założeń (patrz `INDEX.md §2`).
-- [ ] Dopuszczalne jest projektowanie pod limity darmowych planów (np. optymalizacja
+- [x] Dopuszczalne jest projektowanie pod limity darmowych planów (np. optymalizacja
       liczby jednoczesnych połączeń realtime), byle bez wychodzenia poza free.
-- [ ] Płatne plany / skalowanie komercyjne → **`DIRECTION.md`** (gdyby kiedyś było potrzebne).
+- [x] Płatne plany / skalowanie komercyjne → **`DIRECTION.md`** (gdyby kiedyś było potrzebne).
 
 ## 12. Język aplikacji (wymaganie twarde)
-- [ ] Interfejs aplikacji jest w **języku angielskim** (MUST HAVE).
-- [ ] **Język polski** w UI to przyszły dodatek — patrz `DIRECTION.md`.
-- [ ] Uwaga: dotyczy **UI aplikacji**. Dokumentacja założeń (`NEEDS`/`CLAUDE`/`INDEX`/
+- [x] Interfejs aplikacji jest w **języku angielskim** (MUST HAVE).
+- [x] **Język polski** w UI to przyszły dodatek — patrz `DIRECTION.md`.
+- [x] Uwaga: dotyczy **UI aplikacji**. Dokumentacja założeń (`NEEDS`/`CLAUDE`/`INDEX`/
       `DIRECTION`) pozostaje po polsku; nazwy w kodzie po angielsku (patrz `CLAUDE.md §5`).
 
 ## 13. Poza zakresem (na teraz)

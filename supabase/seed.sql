@@ -1,4 +1,4 @@
--- Demo data for local testing. Run after 0001_init.sql.
+-- Demo data for local testing. Run after the migrations (0001…0014).
 -- Safe to re-run: clears the demo trip first.
 delete from trips where name = 'Demo Trip';
 
