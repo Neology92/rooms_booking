@@ -185,6 +185,32 @@ Blokowane przy locku (`§10.3`); zamiana zachowuje obłożenie, więc capacity/o
 `ProposalsBar` (przyjmowanie/odrzucanie), i18n EN+PL. Testy integracyjne zamiany
 pokojów.
 
+Faza 12 — **prywatność preferencji i zamknięcie panelu organizatora** (`0015`):
+`rules` i `pairing_requests` miały `select using (true)`, więc każdy z kluczem anon
+(a ten jest **publiczny** w paczce JS) mógł odczytać, kto z kim chce mieszkać i czyje
+MUST-HAVE jest niespełnione — ukrycie panelu w UI samo tego nie zamyka, granica musi
+być w bazie. Podział: **publiczne zostają pokoje, obłożenie i imiona** (wymaga tego
+`NEEDS §4`, widok uczestnika i tak to pokazuje); uczestnik czyta tylko swoje reguły
+i prośby (`get_my_rules` / `get_my_pairings`, trust-based jak zapisy); organizator
+czyta komplet po `assert_organizer` (`get_trip_rules` / `get_trip_pairings`,
+`search_path` z `extensions` — pułapka z `0008`).
+Front: `useTripData` ładuje dane publiczne + moje prywatne, komplet idzie wyłącznie
+do dashboardu przez `useOrganizerData`. Panel organizatora **nie renderuje nic**
+przed weryfikacją kodu, a wejście do niego to dyskretny link w stopce zamiast
+zakładki w nagłówku (uczestnik go nie zauważa, organizator ma kod w `localStorage`,
+więc wchodzi jednym klikiem). Panel problemów przeniesiony nad strefę niebezpieczną;
+opisy naruszeń zlokalizowane (`describeIssue` — były na sztywno po angielsku).
+
+> **Kompromis:** realtime na tych tabelach przestał docierać do klienta anon
+> (respektuje RLS), więc przychodzące prośby odświeżają się pollingiem co 25 s
+> i przy powrocie do karty — natychmiastowo tylko dla własnych akcji. Zdarzenia
+> z tabel publicznych (przypisania, pokoje) działają jak dotąd.
+
 Kolejne kroki (świadomie odłożone, zgodne z `NEEDS`/`DIRECTION`):
+- ⚠️ **E-maile i płeć uczestników są nadal publicznie czytelne** — tabela
+  `participants` ma `select using (true)`, a trzyma `email` i `gender`. Świadomie
+  odłożone przy Fazie 12 (zakres: same preferencje), ale to otwarty wyciek danych
+  osobowych. Docelowo: kolumny prywatne + `get_my_profile` / odczyt organizatora,
+  analogicznie do `0015`.
 - **Pełne konta użytkowników / per-user auth** oraz **wysyłka e-maili** (NICE TO HAVE —
   odłożone świadomie z uwagi na limity SMTP free, `NEEDS §11`) — `DIRECTION.md`.
