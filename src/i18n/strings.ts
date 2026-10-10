@@ -109,6 +109,8 @@ export const en = {
     deleteTrip: "Delete trip",
     deleteConfirm: (name: string) =>
       `Delete "${name}" and all its rooms, participants and assignments? This cannot be undone.`,
+    issueSameGender: "same-gender room",
+    issueWantsWith: (name: string) => `wants to be with ${name}`,
   },
   organizerAuth: {
     claimHeading: "Claim this trip",
@@ -119,7 +121,8 @@ export const en = {
     passcode: "Organizer passcode",
     claimSubmit: "Claim trip",
     loginSubmit: "Unlock controls",
-    viewOnly: "You're viewing the dashboard read-only. Sign in as organizer to make changes.",
+    gateNote:
+      "This panel is for the trip organizer. Participants manage their own room on the Sign-up tab — rooms and who's in them are visible to everyone there.",
   },
   errors: {
     ROOM_FULL: "That room is already full.",
@@ -318,6 +321,8 @@ export const pl: Strings = {
     deleteTrip: "Usuń wyjazd",
     deleteConfirm: (name: string) =>
       `Usunąć „${name}" wraz ze wszystkimi pokojami, uczestnikami i przypisaniami? Tego nie można cofnąć.`,
+    issueSameGender: "pokój jednopłciowy",
+    issueWantsWith: (name: string) => `chce być z ${name}`,
   },
   organizerAuth: {
     claimHeading: "Przejmij ten wyjazd",
@@ -328,7 +333,8 @@ export const pl: Strings = {
     passcode: "Kod organizatora",
     claimSubmit: "Przejmij wyjazd",
     loginSubmit: "Odblokuj panel",
-    viewOnly: "Oglądasz panel tylko do odczytu. Zaloguj się jako organizator, aby wprowadzać zmiany.",
+    gateNote:
+      "Ten panel jest dla organizatora wyjazdu. Uczestnicy zarządzają swoim pokojem w zakładce zapisów — tam pokoje i ich obsada są widoczne dla wszystkich.",
   },
   errors: {
     ROOM_FULL: "Ten pokój jest już pełny.",

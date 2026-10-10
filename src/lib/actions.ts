@@ -1,6 +1,11 @@
 import { supabase } from "./supabase";
 import { activeErrors } from "../i18n/strings";
-import type { RuleStrictness, RuleType } from "../types/domain";
+import type {
+  PairingRequest,
+  Rule,
+  RuleStrictness,
+  RuleType,
+} from "../types/domain";
 
 export interface ActionResult {
   ok: boolean;
@@ -348,4 +353,60 @@ export async function adminSwap(
     p_passcode: passcode,
   });
   return error ? { ok: false, error: toMessage(error.message) } : { ok: true };
+}
+
+// ---- zawężone odczyty preferencji (0015) ------------------------------------
+// `rules` i `pairing_requests` nie są już publicznie czytelne, więc odczyt idzie
+// przez SECURITY DEFINER RPC: uczestnik dostaje swoje wiersze, organizator cały
+// wyjazd po weryfikacji kodu. Odczyty uczestnika zwracają pustą listę przy
+// błędzie — brak preferencji degraduje UI łagodnie, nie wywala widoku.
+
+export async function fetchMyRules(participantId: string): Promise<Rule[]> {
+  if (!supabase) return [];
+  const { data } = await supabase.rpc("get_my_rules", {
+    p_participant_id: participantId,
+  });
+  return (data as Rule[] | null) ?? [];
+}
+
+export async function fetchMyPairings(
+  participantId: string,
+): Promise<PairingRequest[]> {
+  if (!supabase) return [];
+  const { data } = await supabase.rpc("get_my_pairings", {
+    p_participant_id: participantId,
+  });
+  return (data as PairingRequest[] | null) ?? [];
+}
+
+export interface OrganizerRead<T> extends ActionResult {
+  rows: T[];
+}
+
+// Organizer reads DO surface errors: a stale passcode must bounce the dashboard
+// back to the sign-in form rather than silently showing an empty trip.
+export async function fetchTripRules(
+  tripId: string,
+  passcode: string,
+): Promise<OrganizerRead<Rule>> {
+  if (!supabase) return { ok: false, rows: [], error: activeErrors.UNKNOWN };
+  const { data, error } = await supabase.rpc("get_trip_rules", {
+    p_trip_id: tripId,
+    p_passcode: passcode,
+  });
+  if (error) return { ok: false, rows: [], error: toMessage(error.message) };
+  return { ok: true, rows: (data as Rule[] | null) ?? [] };
+}
+
+export async function fetchTripPairings(
+  tripId: string,
+  passcode: string,
+): Promise<OrganizerRead<PairingRequest>> {
+  if (!supabase) return { ok: false, rows: [], error: activeErrors.UNKNOWN };
+  const { data, error } = await supabase.rpc("get_trip_pairings", {
+    p_trip_id: tripId,
+    p_passcode: passcode,
+  });
+  if (error) return { ok: false, rows: [], error: toMessage(error.message) };
+  return { ok: true, rows: (data as PairingRequest[] | null) ?? [] };
 }

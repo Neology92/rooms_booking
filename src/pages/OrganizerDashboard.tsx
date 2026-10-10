@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   adminAssign,
   adminDeleteTrip,
@@ -12,8 +12,14 @@ import { solve, type SolveResult } from "../lib/solve";
 import { useStrings } from "../i18n/I18nProvider";
 import { OrganizerAuth } from "../components/OrganizerAuth";
 import { RoomsEditor } from "../components/RoomsEditor";
+import { useOrganizerData } from "../hooks/useOrganizerData";
 import type { TripData } from "../hooks/useTripData";
 
+// Organizer-only surface. NOTHING renders before the passcode is verified —
+// occupancy and names are a participant concern and already live in the
+// participant view (NEEDS §4), while preferences and rule violations are
+// organizer business. The data layer enforces the same split (0015), so hiding
+// this panel is not the security boundary, just the matching UX.
 export function OrganizerDashboard({
   data,
   passcode,
@@ -31,13 +37,26 @@ export function OrganizerDashboard({
 }) {
   const s = useStrings();
   const t = s.organizer;
-  const { trip, rooms, participants, assignments, rules, pairings } = data;
+  const { trip, rooms, participants, assignments } = data;
+  const authed = passcode !== null;
+
+  // Re-pull trip-wide preferences whenever the assignment picture changes:
+  // pairing_requests no longer reaches us over Realtime (0015).
+  const assignKey = useMemo(
+    () =>
+      assignments
+        .map((a) => `${a.participant_id}:${a.room_id}`)
+        .sort()
+        .join("|"),
+    [assignments],
+  );
+  const org = useOrganizerData(trip?.id, passcode, assignKey);
 
   // Accepted negotiated pairings fold in as synthetic two-way soft preferences,
-  // so signalling + the optimizer honor them without touching the rules engine.
+  // so signalling + the solver honor them without touching the rules engine.
   const eff = useMemo(
-    () => effectiveRules(rules, pairings, participants),
-    [rules, pairings, participants],
+    () => effectiveRules(org.rules, org.pairings, participants),
+    [org.rules, org.pairings, participants],
   );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -45,7 +64,11 @@ export function OrganizerDashboard({
   const [targetDraft, setTargetDraft] = useState(
     trip?.target_headcount != null ? String(trip.target_headcount) : "",
   );
-  const authed = passcode !== null;
+
+  // A stored passcode that the server rejects drops us back to the sign-in form.
+  useEffect(() => {
+    if (org.error && org.error === s.errors.NOT_ORGANIZER) onSignOut();
+  }, [org.error, s.errors.NOT_ORGANIZER, onSignOut]);
 
   const nameOf = (id: string) =>
     participants.find((p) => p.id === id)?.name ?? "?";
@@ -63,6 +86,12 @@ export function OrganizerDashboard({
 
   const fillOf = (roomId: string) =>
     assignments.filter((a) => a.room_id === roomId).length;
+
+  const describeIssue = (type: string, target: string | null): string => {
+    if (type === "same_gender") return t.issueSameGender;
+    if (type === "preferred_person" && target) return t.issueWantsWith(nameOf(target));
+    return type;
+  };
 
   // Run an organizer action; a stale passcode (NOT_ORGANIZER) drops us back to
   // the sign-in panel so the organizer can re-enter it.
@@ -88,6 +117,20 @@ export function OrganizerDashboard({
   if (!trip) return null;
   const tripId = trip.id;
 
+  if (!authed) {
+    return (
+      <section>
+        <p className="muted">{s.organizerAuth.gateNote}</p>
+        <OrganizerAuth
+          tripId={tripId}
+          claimed={trip.organizer_claimed}
+          onAuthed={onAuthed}
+          onClaimed={onReload}
+        />
+      </section>
+    );
+  }
+
   return (
     <section>
       <div className={`status status--${status}`}>
@@ -98,25 +141,26 @@ export function OrganizerDashboard({
             {trip.target_headcount != null && ` / ${trip.target_headcount}`}
           </span>
         </div>
-        {authed && (
-          <button
-            onClick={() =>
-              act(() => setSignupsLock(tripId, !trip.signups_locked, passcode))
-            }
-            disabled={busy}
-          >
-            {trip.signups_locked ? t.unlockSignups : t.lockSignups}
-          </button>
-        )}
+        <button
+          onClick={() =>
+            act(() => setSignupsLock(tripId, !trip.signups_locked, passcode))
+          }
+          disabled={busy}
+        >
+          {trip.signups_locked ? t.unlockSignups : t.lockSignups}
+        </button>
         <span className={`tag ${trip.signups_locked ? "tag--full" : ""}`}>
           {trip.signups_locked ? t.locked : t.open}
         </span>
-        {authed && (
-          <button className="linklike" onClick={onSignOut}>
-            {t.signOut}
-          </button>
-        )}
+        <button className="linklike" onClick={onSignOut}>
+          {t.signOut}
+        </button>
       </div>
+
+      {error && <p className="banner banner--error">{error}</p>}
+      {org.error && org.error !== s.errors.NOT_ORGANIZER && (
+        <p className="banner banner--error">{org.error}</p>
+      )}
 
       <h2>{t.occupancy}</h2>
       <ul className="rooms">
@@ -138,177 +182,6 @@ export function OrganizerDashboard({
         })}
       </ul>
 
-      {!authed ? (
-        <OrganizerAuth
-          tripId={tripId}
-          claimed={trip.organizer_claimed}
-          onAuthed={onAuthed}
-          onClaimed={onReload}
-        />
-      ) : (
-        <>
-          {error && <p className="banner banner--error">{error}</p>}
-
-          <RoomsEditor
-            tripId={tripId}
-            rooms={rooms}
-            assignments={assignments}
-            passcode={passcode}
-            onError={setError}
-          />
-
-          <div className="target-form">
-            <label className="field">
-              <span>{s.rooms.target}</span>
-              <input
-                type="number"
-                min={1}
-                value={targetDraft}
-                onChange={(e) => setTargetDraft(e.target.value)}
-              />
-            </label>
-            <button
-              disabled={busy}
-              onClick={() =>
-                act(() =>
-                  adminSetTarget(
-                    tripId,
-                    targetDraft.trim() === "" ? null : Number(targetDraft),
-                    passcode,
-                  ),
-                )
-              }
-            >
-              {s.rooms.saveTarget}
-            </button>
-          </div>
-
-          <h2>{t.manage}</h2>
-          <p className="muted">{t.manageIntro}</p>
-          {participants.length === 0 ? (
-            <p className="muted">{t.noParticipants}</p>
-          ) : (
-            <ul className="assign">
-              {participants.map((p) => {
-                const current = roomOf(p.id);
-                return (
-                  <li key={p.id} className="assign__row">
-                    <span className="assign__name">
-                      {p.name}
-                      {p.gender && (
-                        <span className="tag tag--gender">{p.gender}</span>
-                      )}
-                    </span>
-                    <select
-                      value={current}
-                      disabled={busy}
-                      onChange={(e) =>
-                        act(() =>
-                          e.target.value
-                            ? adminAssign(p.id, e.target.value, passcode)
-                            : adminUnassign(p.id, passcode),
-                        )
-                      }
-                    >
-                      <option value="">{t.unassigned}</option>
-                      {rooms.map((room) => {
-                        const count = fillOf(room.id);
-                        const isCurrent = current === room.id;
-                        const full = count >= room.capacity && !isCurrent;
-                        return (
-                          <option key={room.id} value={room.id} disabled={full}>
-                            {full
-                              ? t.roomFullOption(room.name)
-                              : `${room.name} (${count}/${room.capacity})`}
-                          </option>
-                        );
-                      })}
-                    </select>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-
-          <h2>{t.optimize}</h2>
-          <p className="muted">{t.optimizeIntro}</p>
-          <button
-            disabled={busy}
-            onClick={() => setOpt(solve(participants, assignments, rooms, eff))}
-          >
-            {t.optimizeRun}
-          </button>
-          {opt && !opt.changed && (
-            <p className="banner banner--ok">{t.optimizeNone}</p>
-          )}
-          {opt && opt.changed && (
-            <>
-              <p className="muted">
-                {t.optimizeSummary(
-                  opt.before.critical - opt.after.critical,
-                  opt.before.preferences - opt.after.preferences,
-                )}
-              </p>
-              <ul className="assign">
-                {opt.swaps.map((sw, i) => (
-                  <li key={`sw-${sw.aId}-${sw.bId}-${i}`} className="assign__row">
-                    <span className="assign__name">
-                      {t.swapWith(
-                        nameOf(sw.aId),
-                        roomNameOf(sw.aId),
-                        nameOf(sw.bId),
-                        roomNameOf(sw.bId),
-                      )}
-                    </span>
-                  </li>
-                ))}
-                {opt.moves.map((mv, i) => (
-                  <li key={`mv-${mv.participantId}-${i}`} className="assign__row">
-                    <span className="assign__name">
-                      {t.moveTo(nameOf(mv.participantId), roomNameById(mv.toRoomId))}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-              <button
-                disabled={busy}
-                onClick={() =>
-                  act(async () => {
-                    const res = await adminSetAssignments(
-                      tripId,
-                      opt.target.map((r) => r.participantId),
-                      opt.target.map((r) => r.roomId),
-                      passcode,
-                    );
-                    if (res.ok) setOpt(null); // stale after apply; realtime reloads
-                    return res;
-                  })
-                }
-              >
-                {t.applyAll}
-              </button>
-            </>
-          )}
-          <div className="danger-zone">
-            <h2>{t.dangerZone}</h2>
-            <button
-              className="danger"
-              disabled={busy}
-              onClick={() => {
-                if (!window.confirm(t.deleteConfirm(trip.name))) return;
-                void act(async () => {
-                  const res = await adminDeleteTrip(tripId, passcode);
-                  if (res.ok) onDeleted();
-                  return res;
-                });
-              }}
-            >
-              {t.deleteTrip}
-            </button>
-          </div>
-        </>
-      )}
-
       <h2>{t.issues}</h2>
       {critical.length === 0 && preferences.length === 0 ? (
         <p className="banner banner--ok">{t.allGood}</p>
@@ -317,27 +190,172 @@ export function OrganizerDashboard({
           {critical.map((u) => (
             <li key={u.rule.id} className="issue issue--critical">
               <strong>{t.mustHaveViolation}:</strong> {nameOf(u.participantId)} —{" "}
-              {describe(u.rule.type, u.rule.target_participant_id, nameOf)}
+              {describeIssue(u.rule.type, u.rule.target_participant_id)}
             </li>
           ))}
           {preferences.map((u) => (
             <li key={u.rule.id} className="issue issue--pref">
               <strong>{t.preferenceUnmet}:</strong> {nameOf(u.participantId)} —{" "}
-              {describe(u.rule.type, u.rule.target_participant_id, nameOf)}
+              {describeIssue(u.rule.type, u.rule.target_participant_id)}
             </li>
           ))}
         </ul>
       )}
+
+      <RoomsEditor
+        tripId={tripId}
+        rooms={rooms}
+        assignments={assignments}
+        passcode={passcode}
+        onError={setError}
+      />
+
+      <div className="target-form">
+        <label className="field">
+          <span>{s.rooms.target}</span>
+          <input
+            type="number"
+            min={1}
+            value={targetDraft}
+            onChange={(e) => setTargetDraft(e.target.value)}
+          />
+        </label>
+        <button
+          disabled={busy}
+          onClick={() =>
+            act(() =>
+              adminSetTarget(
+                tripId,
+                targetDraft.trim() === "" ? null : Number(targetDraft),
+                passcode,
+              ),
+            )
+          }
+        >
+          {s.rooms.saveTarget}
+        </button>
+      </div>
+
+      <h2>{t.manage}</h2>
+      <p className="muted">{t.manageIntro}</p>
+      {participants.length === 0 ? (
+        <p className="muted">{t.noParticipants}</p>
+      ) : (
+        <ul className="assign">
+          {participants.map((p) => {
+            const current = roomOf(p.id);
+            return (
+              <li key={p.id} className="assign__row">
+                <span className="assign__name">
+                  {p.name}
+                  {p.gender && <span className="tag tag--gender">{p.gender}</span>}
+                </span>
+                <select
+                  value={current}
+                  disabled={busy}
+                  onChange={(e) =>
+                    act(() =>
+                      e.target.value
+                        ? adminAssign(p.id, e.target.value, passcode)
+                        : adminUnassign(p.id, passcode),
+                    )
+                  }
+                >
+                  <option value="">{t.unassigned}</option>
+                  {rooms.map((room) => {
+                    const count = fillOf(room.id);
+                    const isCurrent = current === room.id;
+                    const full = count >= room.capacity && !isCurrent;
+                    return (
+                      <option key={room.id} value={room.id} disabled={full}>
+                        {full
+                          ? t.roomFullOption(room.name)
+                          : `${room.name} (${count}/${room.capacity})`}
+                      </option>
+                    );
+                  })}
+                </select>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      <h2>{t.optimize}</h2>
+      <p className="muted">{t.optimizeIntro}</p>
+      <button
+        disabled={busy}
+        onClick={() => setOpt(solve(participants, assignments, rooms, eff))}
+      >
+        {t.optimizeRun}
+      </button>
+      {opt && !opt.changed && <p className="banner banner--ok">{t.optimizeNone}</p>}
+      {opt && opt.changed && (
+        <>
+          <p className="muted">
+            {t.optimizeSummary(
+              opt.before.critical - opt.after.critical,
+              opt.before.preferences - opt.after.preferences,
+            )}
+          </p>
+          <ul className="assign">
+            {opt.swaps.map((sw, i) => (
+              <li key={`sw-${sw.aId}-${sw.bId}-${i}`} className="assign__row">
+                <span className="assign__name">
+                  {t.swapWith(
+                    nameOf(sw.aId),
+                    roomNameOf(sw.aId),
+                    nameOf(sw.bId),
+                    roomNameOf(sw.bId),
+                  )}
+                </span>
+              </li>
+            ))}
+            {opt.moves.map((mv, i) => (
+              <li key={`mv-${mv.participantId}-${i}`} className="assign__row">
+                <span className="assign__name">
+                  {t.moveTo(nameOf(mv.participantId), roomNameById(mv.toRoomId))}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <button
+            disabled={busy}
+            onClick={() =>
+              act(async () => {
+                const res = await adminSetAssignments(
+                  tripId,
+                  opt.target.map((r) => r.participantId),
+                  opt.target.map((r) => r.roomId),
+                  passcode,
+                );
+                if (res.ok) setOpt(null); // stale after apply; realtime reloads
+                return res;
+              })
+            }
+          >
+            {t.applyAll}
+          </button>
+        </>
+      )}
+
+      <div className="danger-zone">
+        <h2>{t.dangerZone}</h2>
+        <button
+          className="danger"
+          disabled={busy}
+          onClick={() => {
+            if (!window.confirm(t.deleteConfirm(trip.name))) return;
+            void act(async () => {
+              const res = await adminDeleteTrip(tripId, passcode);
+              if (res.ok) onDeleted();
+              return res;
+            });
+          }}
+        >
+          {t.deleteTrip}
+        </button>
+      </div>
     </section>
   );
-}
-
-function describe(
-  type: string,
-  target: string | null,
-  nameOf: (id: string) => string,
-): string {
-  if (type === "same_gender") return "same-gender room";
-  if (type === "preferred_person" && target) return `wants to be with ${nameOf(target)}`;
-  return type;
 }

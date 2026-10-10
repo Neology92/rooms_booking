@@ -41,8 +41,10 @@ export default function App() {
   const [showAuth, setShowAuth] = useState(false);
   const [tab, setTab] = useState<Tab>("participant");
   const { tripId, select } = useTripId();
-  const data = useTripData(tripId);
-  const identity = useIdentity(data.trip?.id);
+  // Identity first: useTripData needs it to fetch my own rules/pairings (0015).
+  // useIdentity only keys localStorage by trip id, so the URL's tripId is enough.
+  const identity = useIdentity(tripId);
+  const data = useTripData(tripId, identity.id);
   const organizer = useOrganizer(data.trip?.id);
   const me = data.participants.find((p) => p.id === identity.id) ?? null;
 
@@ -111,18 +113,6 @@ export default function App() {
         <div className="header__controls">
           {showTabs && (
             <nav className="tabs">
-              <button
-                className={tab === "participant" ? "active" : ""}
-                onClick={() => setTab("participant")}
-              >
-                {s.tabs.participant}
-              </button>
-              <button
-                className={tab === "organizer" ? "active" : ""}
-                onClick={() => setTab("organizer")}
-              >
-                {s.tabs.organizer}
-              </button>
               <button className="linklike" onClick={() => select(undefined)}>
                 {s.tripPicker.back}
               </button>
@@ -142,6 +132,20 @@ export default function App() {
       </header>
 
       {body()}
+
+      {showTabs && (
+        <footer className="app__footer">
+          {tab === "participant" ? (
+            <button className="linklike" onClick={() => setTab("organizer")}>
+              {s.tabs.organizer}
+            </button>
+          ) : (
+            <button className="linklike" onClick={() => setTab("participant")}>
+              {s.tabs.participant}
+            </button>
+          )}
+        </footer>
+      )}
     </main>
   );
 }

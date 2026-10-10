@@ -202,3 +202,13 @@ button.danger { background: #fff; color: #991b1b; border-color: #fca5a5; }
   .room-form input { width: auto; flex: 1 1 8rem; }
   .room-form input[type="number"] { flex: 0 0 5.5rem; width: 5.5rem; }
 }
+
+/* Discreet organizer entrance: participants should not be drawn to it. */
+.app__footer {
+  margin-top: 2rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--line);
+  text-align: center;
+}
+.app__footer .linklike { color: #9ca3af; font-size: 0.85rem; text-decoration: none; }
+.app__footer .linklike:hover { color: var(--brand); text-decoration: underline; }

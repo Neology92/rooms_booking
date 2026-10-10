@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
+import { fetchMyPairings, fetchMyRules } from "../lib/actions";
 import type {
   Assignment,
   PairingRequest,
@@ -14,6 +15,8 @@ export interface TripData {
   rooms: Room[];
   participants: Participant[];
   assignments: Assignment[];
+  // Scoped to the signed-in participant (0015) — NOT the whole trip. The
+  // organizer dashboard loads the trip-wide set separately, behind the passcode.
   rules: Rule[];
   pairings: PairingRequest[];
 }
@@ -27,10 +30,20 @@ const empty: TripData = {
   pairings: [],
 };
 
-// Loads one trip's data (by id) and keeps it live via Supabase Realtime
-// (NEEDS §4/§5). Any change to assignments/rooms/trips triggers a refetch so
-// occupancy stays current. With no tripId, nothing loads (the trip picker shows).
-export function useTripData(tripId: string | undefined) {
+// Incoming proposals can no longer arrive over Realtime: 0015 closed the public
+// read on pairing_requests and Realtime honours RLS, so the anon client gets no
+// events for that table. A light poll keeps the proposals bar fresh — one
+// indexed RPC per tick, and only while the tab is actually visible.
+const MINE_POLL_MS = 25_000;
+
+// Loads one trip's public data (by id) and keeps it live via Supabase Realtime
+// (NEEDS §4/§5): rooms, occupancy and names stay current for everyone. Private
+// data (my rules, my pairings) comes from scoped RPCs and needs participantId.
+// With no tripId, nothing loads (the trip picker shows).
+export function useTripData(
+  tripId: string | undefined,
+  participantId?: string | null,
+) {
   const [data, setData] = useState<TripData>(empty);
   const [loading, setLoading] = useState(true);
 
@@ -52,41 +65,67 @@ export function useTripData(tripId: string | undefined) {
       setLoading(false);
       return;
     }
-    const [rooms, participants, assignments, rules, pairings] = await Promise.all([
+    const [rooms, participants, assignments] = await Promise.all([
       supabase.from("rooms").select("*").eq("trip_id", trip.id).order("name"),
       supabase.from("participants").select("*").eq("trip_id", trip.id).order("name"),
       supabase.from("assignments").select("*").eq("trip_id", trip.id),
-      supabase.from("rules").select("*"),
-      supabase.from("pairing_requests").select("*").eq("trip_id", trip.id),
     ]);
+    let rules: Rule[] = [];
+    let pairings: PairingRequest[] = [];
+    if (participantId) {
+      [rules, pairings] = await Promise.all([
+        fetchMyRules(participantId),
+        fetchMyPairings(participantId),
+      ]);
+    }
     setData({
       trip,
       rooms: rooms.data ?? [],
       participants: participants.data ?? [],
       assignments: assignments.data ?? [],
-      rules: rules.data ?? [],
-      pairings: pairings.data ?? [],
+      rules,
+      pairings,
     });
     setLoading(false);
-  }, [tripId]);
+  }, [tripId, participantId]);
+
+  // Cheap refresh of just my own proposals — no full reload, no flicker.
+  const refreshMine = useCallback(async () => {
+    if (!participantId) return;
+    const mine = await fetchMyPairings(participantId);
+    setData((prev) => (prev.trip ? { ...prev, pairings: mine } : prev));
+  }, [participantId]);
 
   useEffect(() => {
     void load();
     const client = supabase;
     if (!client) return;
+    // Only publicly readable tables are subscribed: rules and pairing_requests
+    // would never deliver to an anon client after 0015 (see MINE_POLL_MS).
     const channel = client
       .channel("trip-data")
       .on("postgres_changes", { event: "*", schema: "public", table: "assignments" }, () => void load())
       .on("postgres_changes", { event: "*", schema: "public", table: "rooms" }, () => void load())
       .on("postgres_changes", { event: "*", schema: "public", table: "trips" }, () => void load())
-      .on("postgres_changes", { event: "*", schema: "public", table: "rules" }, () => void load())
       .on("postgres_changes", { event: "*", schema: "public", table: "participants" }, () => void load())
-      .on("postgres_changes", { event: "*", schema: "public", table: "pairing_requests" }, () => void load())
       .subscribe();
     return () => {
       void client.removeChannel(channel);
     };
   }, [load]);
 
-  return { ...data, loading, reload: load };
+  useEffect(() => {
+    if (!participantId) return;
+    const tick = () => {
+      if (document.visibilityState === "visible") void refreshMine();
+    };
+    const id = window.setInterval(tick, MINE_POLL_MS);
+    window.addEventListener("focus", tick);
+    return () => {
+      window.clearInterval(id);
+      window.removeEventListener("focus", tick);
+    };
+  }, [participantId, refreshMine]);
+
+  return { ...data, loading, reload: load, refreshMine };
 }
