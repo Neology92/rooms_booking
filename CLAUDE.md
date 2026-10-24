@@ -22,10 +22,10 @@ do `NEEDS.md` (krytyczne) lub `DIRECTION.md` (dodatki). Szczegóły: [`INDEX.md 
 ---
 
 ## 1. Status i charakter projektu
-- Faza: **założenia / start**. Stack nie jest jeszcze zaimplementowany.
-- Charakter: aplikacja **webowa**, responsywna (uczestnik najczęściej na telefonie,
-  organizator na desktopie).
-- Sekcje oznaczone *(propozycja)* wymagają potwierdzenia przez autora przed wdrożeniem.
+- Faza: **działająca aplikacja** — stack wdrożony, wymagania krytyczne z `NEEDS.md`
+  zrealizowane. Historia wdrożeń: §7.
+- Charakter: aplikacja **webowa**, responsywna i mobile-first (uczestnik najczęściej
+  na telefonie, organizator na desktopie), instalowalna jako PWA.
 
 ---
 
@@ -112,8 +112,10 @@ Dla aplikacji na wyjazd grupowy darmowe plany wystarczają z dużym zapasem. Pil
 - `npm run lint` — ESLint.
 - `npm test` — testy jednostkowe (Vitest).
 
-Baza: w panelu Supabase uruchom `supabase/migrations/0001_init.sql`
-(i opcjonalnie `supabase/seed.sql`). Konfiguracja połączenia: `.env` wg `.env.example`.
+Baza: w panelu Supabase uruchom **wszystkie** migracje z `supabase/migrations/`
+**po kolei** (`0001` → `0015`), opcjonalnie `supabase/seed.sql`. Uruchomienie samej
+`0001` daje bazę bez organizatorów, reguł, par i prywatności preferencji.
+Konfiguracja połączenia: `.env` wg `.env.example`.
 Setup i deploy: patrz `README.md`.
 
 ## 7. Stan implementacji (MVP) i kolejne kroki
